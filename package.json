@@ -1,0 +1,27 @@
+{
+  "name": "blockstor",
+  "version": "0.1.0",
+  "description": "Block Explorer API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenywallet/blockstor.git"
+  },
+  "keywords": [
+    "blockchain",
+    "explorer"
+  ],
+  "author": "zenywallet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zenywallet/blockstor/issues"
+  },
+  "homepage": "https://github.com/zenywallet/blockstor#readme",
+  "dependencies": {
+    "bitcoin": "^3.0.1",
+    "config": "^1.30.0"
+  }
+}
