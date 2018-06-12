@@ -2,6 +2,7 @@ var opts = require('config');
 var Rpc = require('./Rpc');
 var bitcoin = require('bitcoinjs-lib');
 var Db = require('./Db');
+var ApiServer = require('./ApiServer');
 var rpc = new Rpc(opts);
 rpc.cb = function(cmd, err, res) {
     if(err) {
@@ -10,6 +11,7 @@ rpc.cb = function(cmd, err, res) {
     return res;
 }
 var db = new Db(opts);
+var apiserver = new ApiServer(opts, {db: db});
 
 bitcoin.networks['bitzeny'] = {
     messagePrefix: '\u0018Bitzeny Signed Message:\n',
@@ -126,5 +128,5 @@ async function txs_parser(block, txs_cb, txins_cb, txouts_cb) {
         }
     }
 
-    //console.log(await db.getUnspent('some address here!'));
+    apiserver.start();
 })();

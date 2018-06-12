@@ -4,5 +4,9 @@
         port: 9252,
         user: 'username',
         pass: 'password'
+    },
+    server: {
+        http_port: 8000,
+        ws_port: 8001
     }
 }

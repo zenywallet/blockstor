@@ -24,6 +24,7 @@
     "bitcoin": "^3.0.1",
     "bitcoinjs-lib": "^3.3.2",
     "config": "^1.30.0",
+    "express": "^4.16.3",
     "fs-extra": "^6.0.1",
     "level-packager": "^3.1.0",
     "rocksdb": "^3.0.1"
