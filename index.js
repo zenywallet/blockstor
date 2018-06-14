@@ -2,6 +2,7 @@ var opts = require('config');
 var Rpc = require('./Rpc');
 var bitcoin = require('bitcoinjs-lib');
 var Db = require('./Db');
+var MemPool = require('./MemPool');
 var ApiServer = require('./ApiServer');
 var rpc = new Rpc(opts);
 rpc.cb = function(cmd, err, res) {
@@ -18,8 +19,6 @@ rpc.cb = function(cmd, err, res) {
     return res;
 }
 var db = new Db(opts);
-var apiserver = new ApiServer(opts, {db: db});
-
 bitcoin.networks['bitzeny'] = {
     messagePrefix: '\u0018Bitzeny Signed Message:\n',
     bech32: 'sz',
@@ -32,6 +31,9 @@ bitcoin.networks['bitzeny'] = {
     wif: 0x80
 };
 var network = bitcoin.networks['bitzeny'];
+var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
+var apiserver = new ApiServer(opts, {db: db, mempool: mempool});
+
 
 var aborting = false;
 async function abort() {
@@ -240,6 +242,7 @@ async function block_check() {
 }
 
 async function block_sync(suppress) {
+    var new_block = false;
     var hash = await rpc.getBlockHash(height > 0 ? ++height : 0);
 
     while(hash && !aborting) {
@@ -283,7 +286,7 @@ async function block_sync(suppress) {
             );
 
             if(!suppress) {
-                console.log(timestamp() + ' #' + height + ' ' + hash + ' ' + timestamp(time));
+                console.log("\r" + timestamp() + ' #' + height + ' ' + hash + ' ' + timestamp(time));
             }
             prev_hash = hash;
         } else {
@@ -291,12 +294,15 @@ async function block_sync(suppress) {
         }
 
         hash = await rpc.getBlockHash(++height);
+        new_block = true;
     }
 
 
     if(!hash && height > 0) {
         height--;
     }
+
+    return new_block;
 }
 
 ;(async function() {
@@ -319,7 +325,12 @@ async function block_sync(suppress) {
     async function worker() {
         try {
             await block_check();
-            await block_sync();
+            var new_block = await block_sync();
+            if(new_block) {
+                mempool.update(true);
+            } else {
+                mempool.update();
+            }
 
             if(aborting) {
                 await abort();

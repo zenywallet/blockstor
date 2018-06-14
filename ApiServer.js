@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 
 function ApiServer(opts, libs) {
     var db = libs.db;
+    var mempool = libs.mempool;
     var app;
 
     this.start = function() {
@@ -14,16 +15,88 @@ function ApiServer(opts, libs) {
 
         async function get_addr(address) {
             var utxos = await db.getUnspent(address);
+            var unconfs = mempool.unconfs(address);
             var balance = 0;
-            for(var i in utxos) {
-                var utxo = utxos[i];
-                balance += utxo.value;
+            var unconf = 0;
+            var unconf_out = 0;
+            var unconf_in = 0;
+            var utxo_count = 0;
+
+            var txids = {};
+            if(utxos.length > 0) {
+                for(var i in utxos) {
+                    var utxo = utxos[i];
+                    balance += utxo.value;
+                    txids[utxo.txid] = 1;
+                    utxo_count++;
+                }
             }
-            return {balance: balance};
+
+            if(unconfs.txouts) {
+                var mempool_txouts = unconfs.txouts;
+                mempool_txouts = mempool_txouts.filter(function(txout) {
+                    return !txids[txout.txid];
+                });
+                for(var i in mempool_txouts) {
+                    var txout = mempool_txouts[i];
+                    unconf_in += txout.value;
+                    txids[txout.txid] = 1;
+                    utxo_count++;
+                }
+            }
+
+            if(unconfs.spents) {
+                var mempool_spents = unconfs.spents;
+                mempool_spents = mempool_spents.filter(function(spent) {
+                    return txids[spent.txid];
+                });
+                for(var i in mempool_spents) {
+                    var spent = mempool_spents[i];
+                    unconf_out -= spent.value;
+                    utxo_count--;
+                }
+            }
+
+            unconf = unconf_in + unconf_out;
+
+            return {balance: balance, unconf: unconf, unconf_out: unconf_out, unconf_in: unconf_in, utxo_count: utxo_count};
         }
 
         async function get_utxos(address) {
             var utxos = await db.getUnspent(address);
+            var unconfs = mempool.unconfs(address);
+
+            if(unconfs.txouts) {
+                var txids = {};
+                for(var i in utxos) {
+                    var utxo = utxos[i];
+                    txids[utxo.txid] = 1;
+                }
+
+                var mempool_txouts = unconfs.txouts;
+                mempool_txouts = mempool_txouts.filter(function(txout) {
+                    return !txids[txout.txid];
+                });
+                for(var i in mempool_txouts) {
+                    var txout = mempool_txouts[i];
+                    txids[txout.txid] = 1;
+                }
+
+                utxos = utxos.concat(mempool_txouts);
+            }
+
+            if(unconfs.spents) {
+                var mempool_spent_txids = {};
+                for(var i in unconfs.spents) {
+                    var spent = unconfs.spents[i];
+                    mempool_spent_txids[spent.txid] = 1;
+                }
+
+                utxos = utxos.filter(function(utxo) {
+                    return !mempool_spent_txids[utxo.txid];
+                });
+            }
+
             return utxos;
         }
 
