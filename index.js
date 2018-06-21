@@ -93,7 +93,7 @@ function timestamp(time) {
 
 async function txins(tx, txid, txins_cb) {
     await Promise.all(tx.ins.map(async function(input) {
-        var in_txid = input.hash.reverse().toString('hex');
+        var in_txid = Buffer.from(input.hash).reverse().toString('hex');
         var n = input.index;
         if(n != 0xffffffff) {
             var txout = await db.getTxout(in_txid, n);
@@ -252,7 +252,7 @@ async function block_sync(suppress) {
         }
 
         var block = bitcoin.Block.fromHex(rawblock);
-        var block_prevHash = block.prevHash.reverse().toString('hex');
+        var block_prevHash = Buffer.from(block.prevHash).reverse().toString('hex');
         if(prev_hash == block_prevHash || prev_hash == null) {
             var time = block.timestamp;
             await db.setBlockHash(height, hash, time);
