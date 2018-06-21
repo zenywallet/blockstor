@@ -163,11 +163,6 @@ function MemPool(opts, libs) {
                             pushex(rawmempool_addr_spents, address, {txid: in_txid, n: n, value: txout.value});
                         }
                     } else {
-                        var txout = await db.getTxout(input.hash.toString('hex'), n);
-                        if(txout) {
-                            console.log(txout);
-                            abort();
-                        }
                         var r_spent = rawmempool_spents[in_txid_n];
                         if(!r_spent) {
                             var txout_value = rawmempool_txouts[in_txid_n];
