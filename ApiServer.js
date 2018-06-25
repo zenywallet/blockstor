@@ -123,7 +123,6 @@ function ApiServer(opts, libs) {
         // POST - {addrs: [addr1, addr2, ..., addrN]}
         router.post('/addrs', async function(req, res) {
             var addrs = req.body.addrs;
-            console.log(addrs);
             var balances = [];
             for(var i in addrs) {
                 var addr = addrs[i];
