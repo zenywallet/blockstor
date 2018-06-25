@@ -1,6 +1,6 @@
 var opts = require('config');
 var Rpc = require('./Rpc');
-var bitcoin = require('bitcoinjs-lib');
+var bitcoin = require('./BitcoinjsExt')(require('bitcoinjs-lib'), opts);
 var Db = require('./Db');
 var MemPool = require('./MemPool');
 var ApiServer = require('./ApiServer');
@@ -19,18 +19,7 @@ rpc.cb = function(cmd, err, res) {
     return res;
 }
 var db = new Db(opts);
-bitcoin.networks['bitzeny'] = {
-    messagePrefix: '\u0018Bitzeny Signed Message:\n',
-    bech32: 'sz',
-    bip32: {
-        public: 0x0488b21e,
-        private: 0x0488ade4
-    },
-    pubKeyHash: 0x51,
-    scriptHash: 0x05,
-    wif: 0x80
-};
-var network = bitcoin.networks['bitzeny'];
+var network = bitcoin.networks[opts.target_network];
 var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
 var apiserver = new ApiServer(opts, {db: db, mempool: mempool});
 

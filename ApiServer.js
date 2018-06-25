@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var UINT64 = require('cuint').UINT64;
 
 function ApiServer(opts, libs) {
     var db = libs.db;
@@ -13,20 +14,28 @@ function ApiServer(opts, libs) {
         app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit: 50000}));
         var router = express.Router();
 
+        function conv_uint64(uint64_val) {
+            val = uint64_val.toNumber();
+            if(val > Number.MAX_SAFE_INTEGER) {
+                return uint64_val.toString();
+            }
+            return val;
+        }
+
         async function get_addr(address) {
             var utxos = await db.getUnspent(address);
             var unconfs = mempool.unconfs(address);
-            var balance = 0;
-            var unconf = 0;
-            var unconf_out = 0;
-            var unconf_in = 0;
+            var balance = UINT64(0);
+            var unconf = UINT64(0);
+            var unconf_out = UINT64(0);
+            var unconf_in = UINT64(0);
             var utxo_count = 0;
 
             var txids = {};
             if(utxos.length > 0) {
                 for(var i in utxos) {
                     var utxo = utxos[i];
-                    balance += utxo.value;
+                    balance.add(utxo.value);
                     txids[utxo.txid] = 1;
                     utxo_count++;
                 }
@@ -39,7 +48,7 @@ function ApiServer(opts, libs) {
                 });
                 for(var i in mempool_txouts) {
                     var txout = mempool_txouts[i];
-                    unconf_in += txout.value;
+                    unconf_in.add(txout.value);
                     txids[txout.txid] = 1;
                     utxo_count++;
                 }
@@ -52,14 +61,16 @@ function ApiServer(opts, libs) {
                 });
                 for(var i in mempool_spents) {
                     var spent = mempool_spents[i];
-                    unconf_out -= spent.value;
+                    unconf_out.subtract(spent.value);
                     utxo_count--;
                 }
             }
 
-            unconf = unconf_in + unconf_out;
+            unconf.add(unconf_in).add(unconf_out);
 
-            return {balance: balance, unconf: unconf, unconf_out: unconf_out, unconf_in: unconf_in, utxo_count: utxo_count};
+            return {balance: conv_uint64(balance), unconf: conv_uint64(unconf),
+                unconf_out: conv_uint64(unconf_out), unconf_in: conv_uint64(unconf_in),
+                utxo_count: utxo_count};
         }
 
         async function get_utxos(address) {
@@ -95,6 +106,10 @@ function ApiServer(opts, libs) {
                 utxos = utxos.filter(function(utxo) {
                     return !mempool_spent_txids[utxo.txid];
                 });
+            }
+
+            for(var i in utxos) {
+                utxos[i].value = conv_uint64(utxos[i].value);
             }
 
             return utxos;

@@ -1,5 +1,6 @@
 var rocksdb = require('level-packager')(require('rocksdb'));
 var fs = require('fs-extra');
+var UINT64 = require('cuint').UINT64;
 
 var prefix = {
     blocks: 0x00,       // height = hash, time
@@ -26,8 +27,15 @@ var uint32 = function(val) {
 
 var uint64 = function(val) {
     var v = new Buffer(8);
-    v.writeUInt32BE(Math.floor(val / 0x100000000), 0);
-    v.writeInt32BE(val & -1, 4);
+    if(val instanceof UINT64) {
+        v.writeUInt16BE(val._a48, 0);
+        v.writeUInt16BE(val._a32, 2);
+        v.writeUInt16BE(val._a16, 4);
+        v.writeUInt16BE(val._a00, 6);
+    } else {
+        v.writeUInt32BE(Math.floor(val / 0x100000000), 0);
+        v.writeInt32BE(val & -1, 4);
+    }
     return v;
 }
 
@@ -157,7 +165,7 @@ function Db(opts) {
             uint32(n)
         ]);
         return self.get(key, function(res) {
-            return {value: res.readUInt32BE(0) * 0x100000000 + res.readUInt32BE(4), addresses: res.slice(8).toString().split(',')};
+            return {value: UINT64(res.readUInt32BE(4), res.readUInt32BE(0)), addresses: res.slice(8).toString().split(',')};
         });
     }
 
@@ -221,7 +229,7 @@ function Db(opts) {
                     unspents.push({
                         txid: res.key.slice(len - 36, len - 4).toString('hex'),
                         n: res.key.slice(len - 4, len + 1).readUInt32BE(0),
-                        value: res.value.readUInt32BE(0) * 0x100000000 + res.value.readUInt32BE(4)
+                        value: UINT64(res.value.readUInt32BE(4), res.value.readUInt32BE(0))
                     });
                 }).on('error', function(err) {
                     reject(err);
