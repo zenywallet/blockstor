@@ -5,6 +5,10 @@
         user: 'username',
         pass: 'password'
     },
+    tcp: {
+        host: 'localhost',
+        port: 9253
+    },
     server: {
         http_port: 8000,
         ws_port: 8001

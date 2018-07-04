@@ -1,5 +1,6 @@
 var opts = require('config');
 var Rpc = require('./Rpc');
+var Tcp = require('./Tcp');
 var bitcoin = require('./BitcoinjsExt')(require('bitcoinjs-lib'), opts);
 var Db = require('./Db');
 var MemPool = require('./MemPool');
@@ -249,7 +250,7 @@ async function block_sync(suppress) {
             function progress_out() {
                 if(suppress && progress_flag) {
                     progress_flag = false;
-                    txs_parser_log(height, timestamp(time), true);
+                    txs_parser_log(height, timestamp(time) + ' (RPC mode)', true);
                 }
             }
 
@@ -294,12 +295,75 @@ async function block_sync(suppress) {
     return new_block;
 }
 
+async function block_sync_tcp(suppress) {
+    var tcp = new Tcp(opts);
+
+    var hash = await rpc.getBlockHash(height);
+    var rawblock = await rpc.getBlock(hash, false);
+    if(!rawblock) {
+        throw('ERROR: getBlock');
+    }
+
+    var hash_buf = Buffer.from(hash, 'hex').reverse();
+    tcp.start(height, hash_buf);
+
+    var blockdata;
+    if(height == 0) {
+        var block = bitcoin.Block.fromHex(rawblock);
+        blockdata = {height: height, hash: hash_buf, block: block, rawblock: rawblock};
+    } else {
+        blockdata = await tcp.getblock();
+    }
+
+     while(blockdata && !aborting) {
+        height = blockdata.height;
+        hash = Buffer.from(blockdata.hash).reverse().toString('hex');
+        var block = blockdata.block;
+        var time = block.timestamp;
+        await db.setBlockHash(height, hash, time);
+
+        function progress_out() {
+            if(suppress && progress_flag) {
+                progress_flag = false;
+                txs_parser_log(height, timestamp(time) + ' (TCP mode)', true);
+            }
+        }
+
+        await txs_parser(block,
+            async function txs(txid) {
+            },
+            async function txins(txid, n, txout) {
+                for(var i in txout.addresses) {
+                    var address = txout.addresses[i];
+                    await db.delUnspent(address, txid, n);
+                }
+                progress_out();
+            },
+            async function txouts(txid, n, amount, addresses) {
+                await db.setTxout(txid, n, amount, addresses);
+
+                for(var i in addresses) {
+                    var address = addresses[i];
+                    await db.setUnspent(address, txid, n, amount);
+                }
+                progress_out();
+            }
+        );
+        prev_hash = hash;
+
+        blockdata = await tcp.getblock();
+    }
+
+    tcp.stop();
+}
+
 ;(async function() {
     try {
         height = await db.getLastBlockHeight() || 0;
         await txs_parser_log(height, 'start');
         await block_check();
         progress_enabled();
+        await block_sync_tcp(true);
         await block_sync(true);
         progress_disabled();
         await txs_parser_log(height, aborting ? 'aborted' : 'synced');
