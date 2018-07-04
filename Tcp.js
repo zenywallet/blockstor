@@ -323,7 +323,6 @@ function Tcp(opts) {
     this.stop = function() {
         aborting = true;
         client.end();
-        console.log('stop');
     }
 
     this.getblock = function() {
