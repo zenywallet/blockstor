@@ -24,7 +24,6 @@ var network = bitcoin.networks[opts.target_network];
 var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
 var apiserver = new ApiServer(opts, {db: db, mempool: mempool});
 
-
 var aborting = false;
 async function abort() {
     console.log("\rabort");
@@ -286,7 +285,6 @@ async function block_sync(suppress) {
         hash = await rpc.getBlockHash(++height);
         new_block = true;
     }
-
 
     if(!hash && height > 0) {
         height--;

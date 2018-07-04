@@ -1,5 +1,5 @@
 {
-    rpc : {
+    rpc: {
         host: 'localhost',
         port: 9252,
         user: 'username',
