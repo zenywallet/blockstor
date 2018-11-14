@@ -14,19 +14,19 @@ var rocksdb_opts = {
 };
 
 var uint8 = function(val) {
-    var v = new Buffer(1);
+    var v = Buffer.alloc(1);
     v.writeUInt8(val);
     return v;
 }
 
 var uint32 = function(val) {
-    var v = new Buffer(4);
+    var v = Buffer.alloc(4);
     v.writeUInt32BE(val);
     return v;
 }
 
 var uint64 = function(val) {
-    var v = new Buffer(8);
+    var v = Buffer.alloc(8);
     if(val instanceof UINT64) {
         v.writeUInt16BE(val._a48, 0);
         v.writeUInt16BE(val._a32, 2);

@@ -9,19 +9,19 @@ var debug = function(msg) {
 }
 
 var uint8 = function(val) {
-    var v = new Buffer(1);
+    var v = Buffer.alloc(1);
     v.writeUInt8(val);
     return v;
 }
 
 var uint16 = function(val) {
-    var v = new Buffer(2);
+    var v = Buffer.alloc(2);
     v.writeUInt16LE(val);
     return v;
 }
 
 var uint32 = function(val) {
-    var v = new Buffer(4);
+    var v = Buffer.alloc(4);
     v.writeUInt32LE(val);
     return v;
 }
@@ -31,7 +31,7 @@ var uint64 = function(val) {
         throw 'Error: out of range';
     }
 
-    var v = new Buffer(8);
+    var v = Buffer.alloc(8);
     v.writeInt32LE(val & -1, 0);
     v.writeUInt32LE(Math.floor(val / 0x100000000), 4);
     return v;
@@ -46,7 +46,7 @@ var str = function(val) {
 }
 
 var pad = function(len) {
-    var v = new Buffer(len);
+    var v = Buffer.alloc(len);
     v.fill(0);
     return v;
 }
@@ -190,7 +190,7 @@ function Tcp(opts) {
             var getdata_count = 0;
             var hash = hashes.shift();
             if(hash) {
-                var inventories = new Buffer(0);
+                var inventories = Buffer.alloc(0);
                 do {
                     inventories = Buffer.concat([inventories, uint32(inventory_type.MSG_BLOCK), hash]);
                     req_hashes.push(hash);
@@ -209,7 +209,7 @@ function Tcp(opts) {
     function command_dispatch(header, body) {
         switch(header.command) {
         case 'version':
-            send_message(message('verack', new Buffer(0)));
+            send_message(message('verack', Buffer.alloc(0)));
             break;
 
         case 'verack':
