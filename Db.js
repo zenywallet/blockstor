@@ -224,11 +224,9 @@ function Db(opts) {
                     gte: start,
                     lte: end
                 }).on('data', function(res) {
-                    var len = res.key.length;
-                    var key = res.key;
                     unspents.push({
-                        txid: res.key.slice(len - 36, len - 4).toString('hex'),
-                        n: res.key.slice(len - 4, len + 1).readUInt32BE(0),
+                        txid: res.key.slice(-36, -4).toString('hex'),
+                        n: res.key.readUInt32BE(res.key.length - 4),
                         value: UINT64(res.value.readUInt32BE(4), res.value.readUInt32BE(0))
                     });
                 }).on('error', function(err) {
@@ -269,7 +267,7 @@ function Db(opts) {
                 reverse: true,
                 limit: 1
             }).on('data', function(res) {
-                last_height = res.key.slice(1).readUInt32BE(0);
+                last_height = res.key.readUInt32BE(1);
             }).on('error', function(err) {
                 reject(err);
             }).on('close', function() {
