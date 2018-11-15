@@ -15,9 +15,10 @@ function ApiServer(opts, libs) {
         var router = express.Router();
 
         function conv_uint64(uint64_val) {
-            val = uint64_val.toNumber();
+            strval = uint64_val.toString();
+            val = parseInt(strval);
             if(val > Number.MAX_SAFE_INTEGER) {
-                return uint64_val.toString();
+                return strval;
             }
             return val;
         }
