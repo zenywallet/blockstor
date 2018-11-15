@@ -8,7 +8,7 @@ var prefix = {
     unspents: 0x02      // address, txid, n = value
 };
 
-var rocksdb_opts = {  
+var rocksdb_opts = {
     keyEncoding: 'binary',
     valueEncoding: 'binary'
 };
@@ -220,10 +220,10 @@ function Db(opts) {
 
             var unspents = [];
             return new Promise(function(resolve, reject) {
-                db.createReadStream({  
+                db.createReadStream({
                     gte: start,
                     lte: end
-                }).on('data', function(res) {  
+                }).on('data', function(res) {
                     var len = res.key.length;
                     var key = res.key;
                     unspents.push({
@@ -263,12 +263,12 @@ function Db(opts) {
                 uint32_max
             ]);
             var last_height = null;
-            db.createReadStream({  
+            db.createReadStream({
                 gte: start,
                 lte: end,
                 reverse: true,
                 limit: 1
-            }).on('data', function(res) {  
+            }).on('data', function(res) {
                 last_height = res.key.slice(1).readUInt32BE(0);
             }).on('error', function(err) {
                 reject(err);
