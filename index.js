@@ -172,6 +172,52 @@ async function txs_parser_log(height, status, mode) {
 var height = 0;
 var prev_hash = null;
 
+async function block_writer(block, hash, time) {
+    await db.setBlockHash(height, hash, time);
+
+    await txs_parser(block,
+        async function txs(txid) {
+        },
+        async function txins(txid, n, txout) {
+            for(var i in txout.addresses) {
+                var address = txout.addresses[i];
+                await db.delUnspent(address, txid, n);
+            }
+        },
+        async function txouts(txid, n, amount, addresses) {
+            await db.setTxout(txid, n, amount, addresses);
+
+            for(var i in addresses) {
+                var address = addresses[i];
+                await db.setUnspent(address, txid, n, amount);
+            }
+        }
+    );
+}
+
+async function block_rollback(block) {
+    await txs_rollback_parser(block,
+        async function txs(txid) {
+        },
+        async function txins(txid, n, txout) {
+            for(var i in txout.addresses) {
+                var address = txout.addresses[i];
+                await db.setUnspent(address, txid, n, txout.value);
+            }
+        },
+        async function txouts(txid, n, amount, addresses) {
+            for(var i in addresses) {
+                var address = addresses[i];
+                await db.delUnspent(address, txid, n);
+            }
+
+            await db.delTxout(txid, n);
+        }
+    );
+
+    await db.delBlockHash(height);
+}
+
 async function block_check() {
     if(height > 0) {
         var [hash, db_hash] = await Promise.all([rpc.getBlockHash(height), db.getBlockHash(height)]);
@@ -188,26 +234,7 @@ async function block_check() {
             }
             var block = bitcoin.Block.fromHex(rawblock);
 
-            await txs_rollback_parser(block,
-                async function txs(txid) {
-                },
-                async function txins(txid, n, txout) {
-                    for(var i in txout.addresses) {
-                        var address = txout.addresses[i];
-                        await db.setUnspent(address, txid, n, txout.value);
-                    }
-                },
-                async function txouts(txid, n, amount, addresses) {
-                    for(var i in addresses) {
-                        var address = addresses[i];
-                        await db.delUnspent(address, txid, n);
-                    }
-
-                    await db.delTxout(txid, n);
-                }
-            );
-
-            await db.delBlockHash(height);
+            await block_rollback(block);
 
             if(height > 0) {
                 height--;
@@ -244,38 +271,14 @@ async function block_sync(suppress) {
         var block_prevHash = Buffer.from(block.prevHash).reverse().toString('hex');
         if(prev_hash == block_prevHash || prev_hash == null) {
             var time = block.timestamp;
-            await db.setBlockHash(height, hash, time);
 
-            function progress_out() {
-                if(suppress && progress_flag) {
-                    progress_flag = false;
-                    txs_parser_log(height, timestamp(time) + ' (RPC mode)', true);
-                }
-            }
-
-            await txs_parser(block,
-                async function txs(txid) {
-                },
-                async function txins(txid, n, txout) {
-                    for(var i in txout.addresses) {
-                        var address = txout.addresses[i];
-                        await db.delUnspent(address, txid, n);
-                    }
-                    progress_out();
-                },
-                async function txouts(txid, n, amount, addresses) {
-                    await db.setTxout(txid, n, amount, addresses);
-
-                    for(var i in addresses) {
-                        var address = addresses[i];
-                        await db.setUnspent(address, txid, n, amount);
-                    }
-                    progress_out();
-                }
-            );
+            await block_writer(block, hash, time);
 
             if(!suppress) {
                 console.log("\r" + timestamp() + ' #' + height + ' ' + hash + ' ' + timestamp(time));
+            } else if(progress_flag) {
+                progress_flag = false;
+                txs_parser_log(height, timestamp(time) + ' (RPC mode)', true);
             }
             prev_hash = hash;
         } else {
@@ -318,35 +321,13 @@ async function block_sync_tcp(suppress) {
         hash = Buffer.from(blockdata.hash).reverse().toString('hex');
         var block = blockdata.block;
         var time = block.timestamp;
-        await db.setBlockHash(height, hash, time);
 
-        function progress_out() {
-            if(suppress && progress_flag) {
-                progress_flag = false;
-                txs_parser_log(height, timestamp(time) + ' (TCP mode)', true);
-            }
+        await block_writer(block, hash, time);
+
+        if(suppress && progress_flag) {
+            progress_flag = false;
+            txs_parser_log(height, timestamp(time) + ' (TCP mode)', true);
         }
-
-        await txs_parser(block,
-            async function txs(txid) {
-            },
-            async function txins(txid, n, txout) {
-                for(var i in txout.addresses) {
-                    var address = txout.addresses[i];
-                    await db.delUnspent(address, txid, n);
-                }
-                progress_out();
-            },
-            async function txouts(txid, n, amount, addresses) {
-                await db.setTxout(txid, n, amount, addresses);
-
-                for(var i in addresses) {
-                    var address = addresses[i];
-                    await db.setUnspent(address, txid, n, amount);
-                }
-                progress_out();
-            }
-        );
         prev_hash = hash;
 
         blockdata = await tcp.getblock();
