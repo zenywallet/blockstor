@@ -313,7 +313,7 @@ async function block_sync_tcp(suppress) {
         blockdata = await tcp.getblock();
     }
 
-     while(blockdata && !aborting) {
+    while(blockdata && !aborting) {
         height = blockdata.height;
         hash = Buffer.from(blockdata.hash).reverse().toString('hex');
         var block = blockdata.block;
