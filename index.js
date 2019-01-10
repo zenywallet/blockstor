@@ -166,6 +166,8 @@ async function txs_parser_log(height, status, mode) {
         } else {
             console.log(msg);
         }
+    } else {
+        throw('ERROR: getBlockCount');
     }
 }
 
@@ -300,6 +302,9 @@ async function block_sync_tcp(suppress) {
     var tcp = new Tcp(opts);
 
     var hash = await rpc.getBlockHash(height);
+    if(!hash) {
+        throw('ERROR: getBlockHash');
+    }
     var rawblock = await rpc.getBlock(hash, false);
     if(!rawblock) {
         throw('ERROR: getBlock');
