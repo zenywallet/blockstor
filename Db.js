@@ -3,9 +3,13 @@ var fs = require('fs-extra');
 var UINT64 = require('cuint').UINT64;
 
 var prefix = {
-    blocks: 0x00,       // height = hash, time
-    txouts: 0x01,       // txid, n = value, [address, ..]
-    unspents: 0x02      // address, txid, n = value
+    rawblocks: 0x00,    // height, hash = rawblock, server_time
+    blocks: 0x01,       // height = hash, time, sequence
+    txs: 0x02,          // txid = height, time, sequence
+    txouts: 0x03,       // txid, n = sequence, value, [address, ..]
+    unspents: 0x04,     // address, sequence, txid, n = value
+    addrvals: 0x05,     // address = value, utxo_count
+    addrlogs: 0x06      // address, sequence, type (0 - out | 1 - in) = txid, value
 };
 
 var rocksdb_opts = {
@@ -49,8 +53,12 @@ var str = function(val) {
 
 var txid_min = hex('0000000000000000000000000000000000000000000000000000000000000000');
 var txid_max = hex('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+var uint8_min = uint8(0);
+var uint8_max = uint8(0xff);
 var uint32_min = uint32(0);
 var uint32_max = uint32(0xffffffff);
+var uint64_min = uint64(0);
+var uint64_max = uint64(UINT64(0xffffffff, 0xffffffff));
 
 function Db(opts) {
     var homepath = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -115,14 +123,71 @@ function Db(opts) {
         });
     }
 
-    this.setBlockHash = function(height, hash, time) {
+    this.setRawBlock = function(height, hash, rawblock, server_time) {
+        var key = Buffer.concat([
+            uint8(prefix.rawblocks),
+            uint32(height),
+            hex(hash)
+        ]);
+        var val = Buffer.concat([
+            Buffer.isBuffer(rawblock) ? rawblock : hex(rawblock),
+            uint32(server_time)
+        ]);
+        return self.put(key, val);
+    }
+
+    this.getRawBlock = function(height, hash, binary) {
+        var key = Buffer.concat([
+            uint8(prefix.rawblocks),
+            uint32(height),
+            hex(hash)
+        ]);
+        if(binary) {
+            return self.get(key, function(res) {
+                return res.slice(0, -4);
+            });
+        } else {
+            return self.get(key, function(res) {
+                return res.slice(0, -4).toString('hex');
+            });
+        }
+    }
+
+    this.getRawBlockInfo = function(height, hash, binary) {
+        var key = Buffer.concat([
+            uint8(prefix.rawblocks),
+            uint32(height),
+            hex(hash)
+        ]);
+        if(binary) {
+            return self.get(key, function(res) {
+                return {rawblock: res.slice(0, -4), server_time: res.slice(-4).readUInt32BE(0)};
+            });
+        } else {
+            return self.get(key, function(res) {
+                return {rawblock: res.slice(0, -4).toString('hex'), server_time: res.slice(-4).readUInt32BE(0)};
+            });
+        }
+    }
+
+    this.delRawBlock = function(height, hash) {
+        var key = Buffer.concat([
+            uint8(prefix.rawblocks),
+            uint32(height),
+            hex(hash)
+        ]);
+        return self.del(key);
+    }
+
+    this.setBlockHash = function(height, hash, time, sequence) {
         var key = Buffer.concat([
             uint8(prefix.blocks),
             uint32(height)
         ]);
         var val = Buffer.concat([
             hex(hash),
-            uint32(time)
+            uint32(time),
+            uint64(sequence)
         ]);
         return self.put(key, val);
     }
@@ -133,7 +198,11 @@ function Db(opts) {
             uint32(height)
         ]);
         return self.get(key, function(res) {
-            return {hash: res.slice(0, 32).toString('hex'), time: res.readUInt32BE(32)};
+            return {
+                hash: res.slice(0, 32).toString('hex'),
+                time: res.readUInt32BE(32),
+                sequence: res.readUInt32BE(36) * 0x100000000 + res.readUInt32BE(40)
+            };
         });
     }
 
@@ -145,13 +214,51 @@ function Db(opts) {
         return self.del(key);
     }
 
-    this.setTxout = function(txid, n, value, addresses) {
+    this.setTx = function(txid, height, time, sequence) {
+        var key = Buffer.concat([
+            uint8(prefix.txs),
+            hex(txid)
+        ]);
+        var val = Buffer.concat([
+            uint32(height),
+            uint32(time),
+            uint64(sequence)
+        ]);
+        var ret = self.put(key, val);
+        return ret;
+    }
+
+    this.getTx = function(txid) {
+        var key = Buffer.concat([
+            uint8(prefix.txs),
+            hex(txid)
+        ]);
+        return self.get(key, function(res) {
+            return {
+                height: res.readUInt32BE(0),
+                time: res.readUInt32BE(4),
+                sequence: res.readUInt32BE(8) * 0x100000000 + res.readUInt32BE(12)
+            };
+        });
+    }
+
+    this.delTx = function(txid) {
+        var key = Buffer.concat([
+            uint8(prefix.txs),
+            hex(txid)
+        ]);
+        var ret = self.del(key);
+        return ret;
+    }
+
+    this.setTxout = function(txid, n, sequence, value, addresses) {
         var key = Buffer.concat([
             uint8(prefix.txouts),
             hex(txid),
             uint32(n)
         ]);
         var val = Buffer.concat([
+            uint64(sequence),
             uint64(value),
             str(addresses.join(','))
         ]);
@@ -165,7 +272,11 @@ function Db(opts) {
             uint32(n)
         ]);
         return self.get(key, function(res) {
-            return {value: UINT64(res.readUInt32BE(4), res.readUInt32BE(0)), addresses: res.slice(8).toString().split(',')};
+            return {
+                sequence: res.readUInt32BE(0) * 0x100000000 + res.readUInt32BE(4),
+                value: UINT64(res.readUInt32BE(12), res.readUInt32BE(8)),
+                addresses: res.slice(16).toString().split(',')
+            };
         });
     }
 
@@ -178,10 +289,11 @@ function Db(opts) {
         return self.del(key);
     }
 
-    this.setUnspent = function(address, txid, n, value) {
+    this.setUnspent = function(address, sequence, txid, n, value) {
         var key = Buffer.concat([
             uint8(prefix.unspents),
             str(address),
+            uint64(sequence),
             hex(txid),
             uint32(n)
         ]);
@@ -191,61 +303,214 @@ function Db(opts) {
         return self.put(key, val);
     }
 
-    this.getUnspent = function(address, txid, n) {  // address, [txid, n]
-        if(txid && n) {
-            var key = Buffer.concat([
-                uint8(prefix.unspents),
-                str(address),
-                hex(txid),
-                uint32(n)
-            ]);
-            return self.get(key, function(res) {
-                return res.readUInt32BE(0);
-            });
-        } else {
-            var p_unspent = uint8(prefix.unspents);
-            var str_addr = str(address);
-            var start = Buffer.concat([
-                p_unspent,
-                str_addr,
-                txid_min,
-                uint32_min
-            ]);
-            var end = Buffer.concat([
-                p_unspent,
-                str_addr,
-                txid_max,
-                uint32_max
-            ]);
-
-            var unspents = [];
-            return new Promise(function(resolve, reject) {
-                db.createReadStream({
-                    gte: start,
-                    lte: end
-                }).on('data', function(res) {
-                    unspents.push({
-                        txid: res.key.slice(-36, -4).toString('hex'),
-                        n: res.key.readUInt32BE(res.key.length - 4),
-                        value: UINT64(res.value.readUInt32BE(4), res.value.readUInt32BE(0))
-                    });
-                }).on('error', function(err) {
-                    reject(err);
-                }).on('close', function() {
-                    reject(null);
-                }).on('end', function() {
-                    resolve(unspents);
-                });
-            });
-        }
-    }
-
-    this.delUnspent = function(address, txid, n) {
+    this.getUnspent = function(address, sequence, txid, n) {
         var key = Buffer.concat([
             uint8(prefix.unspents),
             str(address),
+            uint64(sequence),
             hex(txid),
             uint32(n)
+        ]);
+        return self.get(key, function(res) {
+            return res.readUInt32BE(0);
+        });
+    }
+
+    this.getUnspents = function(address) {
+        var p_unspent = uint8(prefix.unspents);
+        var str_addr = str(address);
+        var start = Buffer.concat([
+            p_unspent,
+            str_addr,
+            uint64_min,
+            txid_min,
+            uint32_min
+        ]);
+        var end = Buffer.concat([
+            p_unspent,
+            str_addr,
+            uint64_max,
+            txid_max,
+            uint32_max
+        ]);
+
+        var unspents = [];
+        return new Promise(function(resolve, reject) {
+            db.createReadStream({
+                gte: start,
+                lte: end
+            }).on('data', function(res) {
+                unspents.push({
+                    txid: res.key.slice(-36, -4).toString('hex'),
+                    n: res.key.readUInt32BE(res.key.length - 4),
+                    value: UINT64(res.value.readUInt32BE(4), res.value.readUInt32BE(0))
+                });
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                resolve(unspents);
+            });
+        });
+    }
+
+    this.delUnspent = function(address, sequence, txid, n) {
+        var key = Buffer.concat([
+            uint8(prefix.unspents),
+            str(address),
+            uint64(sequence),
+            hex(txid),
+            uint32(n)
+        ]);
+        return self.del(key);
+    }
+
+    this.setAddrval = function(address, value, utxo_count) {
+        var key = Buffer.concat([
+            uint8(prefix.addrvals),
+            str(address)
+        ]);
+        var val = Buffer.concat([
+            uint64(value),
+            uint32(utxo_count)
+        ]);
+        var ret = self.put(key, val);
+        return ret;
+    }
+
+    this.getAddrval = function(address) {
+        var key = Buffer.concat([
+            uint8(prefix.addrvals),
+            str(address)
+        ]);
+        return self.get(key, function(res) {
+            return {
+                value: UINT64(res.readUInt32BE(4), res.readUInt32BE(0)),
+                utxo_count: res.readUInt32BE(8)
+            };
+        });
+    }
+
+    this.delAddrval = function(address) {
+        var key = Buffer.concat([
+            uint8(prefix.addrvals),
+            str(address)
+        ]);
+        var ret = self.del(key);
+        return ret;
+    }
+
+    this.setAddrlog = function(address, sequence, type, txid, value) {
+        var key = Buffer.concat([
+            uint8(prefix.addrlogs),
+            str(address),
+            uint64(sequence),
+            uint8(type)
+        ]);
+        var val = Buffer.concat([
+            hex(txid),
+            uint64(value)
+        ]);
+        return self.put(key, val);
+    }
+
+    this.getAddrlog = function(address, sequence, type) {
+        var key = Buffer.concat([
+            uint8(prefix.addrlogs),
+            str(address),
+            uint64(sequence),
+            uint8(type)
+        ]);
+        return self.get(key, function(res) {
+            return {
+                txid: res.slice(0, 32).toString('hex'),
+                value: UINT64(res.readUInt32BE(36), res.readUInt32BE(32))
+            }
+        });
+    }
+
+    this.getAddrlogs = function(address, sequence) { // address, [sequence]
+        var p_addrlog = uint8(prefix.addrlogs);
+        var str_addr = str(address);
+        var start = Buffer.concat([
+            p_addrlog,
+            str_addr,
+            uint64_min,
+            uint8_min
+        ]);
+        var end = Buffer.concat([
+            p_addrlog,
+            str_addr,
+            sequence ? uint64(sequence) : uint64_max,
+            uint8_max
+        ]);
+
+        var addrlogs = [];
+        return new Promise(function(resolve, reject) {
+            db.createReadStream({
+                gte: start,
+                lt: end,
+                reverse: true,
+                limit: 1000
+            }).on('data', function(res) {
+                var len = res.key.length;
+                addrlogs.push({
+                    sequence: res.key.readUInt32BE(len - 9) * 0x100000000 + res.key.readUInt32BE(len - 5),
+                    type: res.key.readUInt8(len - 1),
+                    txid: res.value.slice(0, 32).toString('hex'),
+                    value: UINT64(res.value.readUInt32BE(36), res.value.readUInt32BE(32))
+                });
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                resolve(addrlogs);
+            });
+        });
+    }
+
+    this.checkAddrlogExist = function(address) {
+        var p_addrlog = uint8(prefix.addrlogs);
+        var str_addr = str(address);
+        var start = Buffer.concat([
+            p_addrlog,
+            str_addr,
+            uint64_min,
+            uint8_min
+        ]);
+        var end = Buffer.concat([
+            p_addrlog,
+            str_addr,
+            uint64_max,
+            uint8_max
+        ]);
+
+        var exist = false;
+        return new Promise(function(resolve, reject) {
+            db.createReadStream({
+                gte: start,
+                lte: end,
+                limit: 1
+            }).on('data', function(res) {
+                exist = true;
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                resolve(exist);
+            });
+        });
+    }
+
+    this.delAddrlog = function(address, sequence, type) {
+        var key = Buffer.concat([
+            uint8(prefix.addrlogs),
+            str(address),
+            uint64(sequence),
+            uint8(type)
         ]);
         return self.del(key);
     }

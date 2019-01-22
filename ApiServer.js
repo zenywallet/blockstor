@@ -24,58 +24,63 @@ function ApiServer(opts, libs) {
         }
 
         async function get_addr(address) {
-            var utxos = await db.getUnspent(address);
             var unconfs = mempool.unconfs(address);
-            var balance = UINT64(0);
-            var unconf = UINT64(0);
-            var unconf_out = UINT64(0);
-            var unconf_in = UINT64(0);
-            var utxo_count = 0;
-
-            var txids = {};
-            if(utxos.length > 0) {
-                for(var i in utxos) {
-                    var utxo = utxos[i];
-                    balance.add(utxo.value);
-                    txids[utxo.txid] = 1;
-                    utxo_count++;
+            if(unconfs.txouts || unconfs.spents) {
+                var utxos = await db.getUnspents(address);
+                var balance = UINT64(0);
+                var unconf_out = UINT64(0);
+                var unconf_in = UINT64(0);
+                var utxo_count = 0;
+                var txids = {};
+                if(utxos.length > 0) {
+                    for(var i in utxos) {
+                        var utxo = utxos[i];
+                        balance.add(utxo.value);
+                        txids[utxo.txid] = 1;
+                        utxo_count++;
+                    }
                 }
-            }
 
-            if(unconfs.txouts) {
-                var mempool_txouts = unconfs.txouts;
-                mempool_txouts = mempool_txouts.filter(function(txout) {
-                    return !txids[txout.txid];
-                });
-                for(var i in mempool_txouts) {
-                    var txout = mempool_txouts[i];
-                    unconf_in.add(txout.value);
-                    txids[txout.txid] = 1;
-                    utxo_count++;
+                if(unconfs.txouts) {
+                    var mempool_txouts = unconfs.txouts;
+                    mempool_txouts = mempool_txouts.filter(function(txout) {
+                        return !txids[txout.txid];
+                    });
+                    for(var i in mempool_txouts) {
+                        var txout = mempool_txouts[i];
+                        unconf_in.add(txout.value);
+                        txids[txout.txid] = 1;
+                        utxo_count++;
+                    }
                 }
-            }
 
-            if(unconfs.spents) {
-                var mempool_spents = unconfs.spents;
-                mempool_spents = mempool_spents.filter(function(spent) {
-                    return txids[spent.txid];
-                });
-                for(var i in mempool_spents) {
-                    var spent = mempool_spents[i];
-                    unconf_out.subtract(spent.value);
-                    utxo_count--;
+                if(unconfs.spents) {
+                    var mempool_spents = unconfs.spents;
+                    mempool_spents = mempool_spents.filter(function(spent) {
+                        return txids[spent.txid];
+                    });
+                    for(var i in mempool_spents) {
+                        var spent = mempool_spents[i];
+                        unconf_out.subtract(spent.value);
+                        utxo_count--;
+                    }
                 }
+                return {
+                    balance: conv_uint64(balance),
+                    utxo_count: utxo_count,
+                    unconf: {out: conv_uint64(unconf_out), in: conv_uint64(unconf_in)}
+                };
+            } else {
+                var addrval = await db.getAddrval(address);
+                return {
+                    balance: conv_uint64(addrval.value),
+                    utxo_count: addrval.utxo_count
+                };
             }
-
-            unconf.add(unconf_in).add(unconf_out);
-
-            return {balance: conv_uint64(balance), unconf: conv_uint64(unconf),
-                unconf_out: conv_uint64(unconf_out), unconf_in: conv_uint64(unconf_in),
-                utxo_count: utxo_count};
         }
 
         async function get_utxos(address) {
-            var utxos = await db.getUnspent(address);
+            var utxos = await db.getUnspents(address);
             var unconfs = mempool.unconfs(address);
 
             if(unconfs.txouts) {

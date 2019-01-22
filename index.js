@@ -2,6 +2,7 @@ var opts = require('config');
 var Rpc = require('./Rpc');
 var Tcp = require('./Tcp');
 var bitcoin = require('./BitcoinjsExt')(require('bitcoinjs-lib'), opts);
+var UINT64 = require('cuint').UINT64;
 var Db = require('./Db');
 var MemPool = require('./MemPool');
 var ApiServer = require('./ApiServer');
@@ -80,7 +81,34 @@ function timestamp(time) {
     return dt_string;
 }
 
-async function txins(tx, txid, txins_cb) {
+function now() {
+    return Math.floor(new Date().getTime() / 1000);
+}
+
+var height = 0;
+var prev_hash = null;
+var tx_sequence = 0;
+
+function addrvals_aggregate(addrvals) {
+    var agg = {};
+    for(var i in addrvals) {
+        var addrval = addrvals[i];
+        if(!agg[addrval.address]) {
+            agg[addrval.address] = {value: addrval.value, utxo_count: 1};
+        } else {
+            agg[addrval.address].value.add(addrval.value);
+            agg[addrval.address].utxo_count++;
+        }
+    }
+    var addrs = [];
+    for(var i in agg) {
+        addrs.push({address: i, value: agg[i].value, utxo_count: agg[i].utxo_count});
+    }
+    return addrs;
+}
+
+async function txins(tx, txid, sequence, txins_cb) {
+    var addrvals = [];
     await Promise.all(tx.ins.map(async function(input) {
         var in_txid = Buffer.from(input.hash).reverse().toString('hex');
         var n = input.index;
@@ -90,12 +118,18 @@ async function txins(tx, txid, txins_cb) {
                 throw('ERROR: Txout not found ' + in_txid + ' ' + n);
             }
 
-            await txins_cb(in_txid, n, txout);
+            await txins_cb(in_txid, n, sequence, txout);
+            for(var i in txout.addresses) {
+                addrvals.push({address: txout.addresses[i], value: txout.value});
+            }
         }
     }));
+
+    return addrvals_aggregate(addrvals);
 }
 
-async function txouts(tx, txid, txouts_cb) {
+async function txouts(tx, txid, sequence, txouts_cb) {
+    var addrvals = [];
     await Promise.all(tx.outs.map(async function(output, n) {
         var amount = output.value;
         var address = null;
@@ -104,7 +138,8 @@ async function txouts(tx, txid, txouts_cb) {
         } catch(ex) {}
 
         if(address) {
-            await txouts_cb(txid, n, amount, [address]);
+            await txouts_cb(txid, n, sequence, amount, [address]);
+            addrvals.push({address: address, value: amount});
         } else {
             var addresses = [];
             var chunks = bitcoin.script.decompile(output.script);
@@ -118,42 +153,86 @@ async function txouts(tx, txid, txouts_cb) {
                 }
             }
             if(addresses.length > 0) {
-                await txouts_cb(txid, n, amount, addresses);
+                await txouts_cb(txid, n, sequence, amount, addresses);
+                for(var i in addresses) {
+                    addrvals.push({address: addresses[i], value: amount});
+                }
             } else {
                 address = '#' + txid + '-' + n;
-                await txouts_cb(txid, n, amount, [address]);
+                await txouts_cb(txid, n, sequence, amount, [address]);
+                addrvals.push({address: address, value: amount});
             }
         }
     }));
+
+    return addrvals_aggregate(addrvals);
 }
 
-async function txs_parser(block, txs_cb, txins_cb, txouts_cb) {
+async function txs_parser(block, txs_cb, txins_cb, txouts_cb, addrins_cb, addrouts_cb) {
     var txids = [];
+    var sequences = [];
+    var addrins = [];
+    var addrouts = [];
     await Promise.all(block.transactions.map(async function(tx, i) {
         var txid = tx.getId();
         txids[i] = txid;
-        await txs_cb(txid);
-        await txouts(tx, txid, txouts_cb);
+        var sequence = tx_sequence + i;
+        sequences[i] = sequence;
+        await txs_cb(txid, sequence);
+        addrouts[i] = await txouts(tx, txid, sequence, txouts_cb);
     }));
 
     await Promise.all(block.transactions.map(async function(tx, i) {
-        await txins(tx, txids[i], txins_cb);
+        addrins[i] = await txins(tx, txids[i], sequences[i], txins_cb);
     }));
+
+    for(var i in addrouts) {
+        var addrout = addrouts[i];
+        for(var j in addrout) {
+            await addrouts_cb(txids[i], sequences[i], addrout[j]);
+        }
+    }
+    for(var i in addrins) {
+        var addrin = addrins[i];
+        for(var j in addrin) {
+            await addrins_cb(txids[i], sequences[i], addrin[j]);
+        }
+    }
+    tx_sequence += block.transactions.length;
 }
 
-async function txs_rollback_parser(block, txs_cb, txins_cb, txouts_cb) {
+async function txs_rollback_parser(block, txs_cb, txins_cb, txouts_cb, addrins_cb, addrouts_cb) {
     var txids = [];
+    var sequences = [];
+    var addrins = [];
+    var addrouts = [];
+    tx_sequence -= block.transactions.length;
     await Promise.all(block.transactions.map(async function(tx, i) {
         var txid = tx.getId();
         txids[i] = txid;
-        await txins(tx, txid, txins_cb);
+        var sequence = tx_sequence + i;
+        sequences[i] = sequence;
+        addrins[i] = await txins(tx, txid, sequence, txins_cb);
     }));
 
     await Promise.all(block.transactions.map(async function(tx, i) {
         var txid = txids[i];
-        await txouts(tx, txid, txouts_cb);
-        await txs_cb(txid);
+        addrouts[i] = await txouts(tx, txid, sequences[i], txouts_cb);
+        await txs_cb(txid, sequences[i]);
     }));
+
+    for(var i in addrins) {
+        var addrin = addrins[i];
+        for(var j in addrin) {
+            await addrins_cb(txids[i], sequences[i], addrin[j]);
+        }
+    }
+    for(var i in addrouts) {
+        var addrout = addrouts[i];
+        for(var j in addrout) {
+            await addrouts_cb(txids[i], sequences[i], addrout[j]);
+        }
+    }
 }
 
 async function txs_parser_log(height, status, mode) {
@@ -171,53 +250,156 @@ async function txs_parser_log(height, status, mode) {
     }
 }
 
-var height = 0;
-var prev_hash = null;
-
-async function block_writer(block, hash, time) {
-    await db.setBlockHash(height, hash, time);
+async function block_writer(block, hash, time, rawblock) {
+    if(opts.db.rawblocks) {
+        await db.setRawBlock(height, hash, rawblock, now());
+    }
+    await db.setBlockHash(height, hash, time, tx_sequence);
 
     await txs_parser(block,
-        async function txs(txid) {
+        async function txs(txid, sequence) {
+            await db.setTx(txid, height, time, sequence);
         },
-        async function txins(txid, n, txout) {
+        async function txins(txid, n, sequence, txout) {
             for(var i in txout.addresses) {
                 var address = txout.addresses[i];
-                await db.delUnspent(address, txid, n);
+                await db.delUnspent(address, txout.sequence, txid, n);
             }
         },
-        async function txouts(txid, n, amount, addresses) {
-            await db.setTxout(txid, n, amount, addresses);
+        async function txouts(txid, n, sequence, amount, addresses) {
+            await db.setTxout(txid, n, sequence, amount, addresses);
 
             for(var i in addresses) {
                 var address = addresses[i];
-                await db.setUnspent(address, txid, n, amount);
+                await db.setUnspent(address, sequence, txid, n, amount);
             }
+        },
+        async function addrins(txid, sequence, addrval) {
+            var val = await db.getAddrval(addrval.address);
+            if(val == null) {
+                throw('ERROR: Address not found ' + address);
+            }
+
+            await db.setAddrval(addrval.address, val.value.subtract(addrval.value), val.utxo_count - addrval.utxo_count);
+            await db.setAddrlog(addrval.address, sequence, 0, txid, addrval.value);
+        },
+        async function addrouts(txid, sequence, addrval) {
+            var val = await db.getAddrval(addrval.address);
+            val = val ? val : {value: UINT64(0), utxo_count: 0};
+
+            await db.setAddrval(addrval.address, val.value.add(addrval.value), val.utxo_count + addrval.utxo_count);
+            await db.setAddrlog(addrval.address, sequence, 1, txid, addrval.value);
         }
     );
 }
 
-async function block_rollback(block) {
-    await txs_rollback_parser(block,
-        async function txs(txid) {
+async function block_rewriter(block, hash, time, rawblock) {
+    await txs_parser(block,
+        async function txs(txid, sequence) {
+            await db.setTx(txid, height, time, sequence);
         },
-        async function txins(txid, n, txout) {
+        async function txins(txid, n, sequence, txout) {
             for(var i in txout.addresses) {
                 var address = txout.addresses[i];
-                await db.setUnspent(address, txid, n, txout.value);
+                await db.delUnspent(address, txout.sequence, txid, n);
             }
         },
-        async function txouts(txid, n, amount, addresses) {
+        async function txouts(txid, n, sequence, amount, addresses) {
+            await db.setTxout(txid, n, sequence, amount, addresses);
+
             for(var i in addresses) {
                 var address = addresses[i];
-                await db.delUnspent(address, txid, n);
+                await db.setUnspent(address, sequence, txid, n, amount);
+            }
+        },
+        async function addrins(txid, sequence, addrval) {
+            var val = UINT64(0);
+            var utxo_count = 0;
+            var utxos = await db.getUnspents(addrval.address);
+            for(var i in utxos) {
+                val.add(utxos[i].value);
+                utxo_count++;
+            }
+            await db.setAddrval(addrval.address, val, utxo_count);
+            await db.setAddrlog(addrval.address, sequence, 0, txid, addrval.value);
+        },
+        async function addrouts(txid, sequence, addrval) {
+            var val = UINT64(0);
+            var utxo_count = 0;
+            var utxos = await db.getUnspents(addrval.address);
+            for(var i in utxos) {
+                val.add(utxos[i].value);
+                utxo_count++;
+            }
+            await db.setAddrval(addrval.address, val, utxo_count);
+            await db.setAddrlog(addrval.address, sequence, 1, txid, addrval.value);
+        }
+    );
+}
+
+async function block_rollback(block, hash) {
+    await txs_rollback_parser(block,
+        async function txs(txid, sequence) {
+        },
+        async function txins(txid, n, sequence, txout) {
+            for(var i in txout.addresses) {
+                var address = txout.addresses[i];
+                await db.setUnspent(address, sequence, txid, n, txout.value);
+            }
+        },
+        async function txouts(txid, n, sequence, amount, addresses) {
+            for(var i in addresses) {
+                var address = addresses[i];
+                await db.delUnspent(address, sequence, txid, n);
             }
 
             await db.delTxout(txid, n);
+        },
+        async function addrins(txid, sequence, addrval) {
+            var val = await db.getAddrval(addrval.address);
+            if(val == null) {
+                throw('ERROR: Address not found ' + address);
+            }
+
+            await db.delAddrlog(addrval.address, sequence, 0);
+            await db.setAddrval(addrval.address, val.value.subtract(addrval.value), val.utxo_count + addrval.utxo_count);
+        },
+        async function addrouts(txid, sequence, addrval) {
+            var val = await db.getAddrval(addrval.address);
+            if(val == null) {
+                throw('ERROR: Address not found ' + address);
+            }
+
+            await db.delAddrlog(addrval.address, sequence, 1);
+            var exist = await db.checkAddrlogExist(addrval.address);
+            if(exist) {
+                await db.setAddrval(addrval.address, val.value.subtract(addrval.value), val.utxo_count - addrval.utxo_count);
+            } else {
+                await db.delAddrval(addrval.address);
+            }
         }
     );
 
     await db.delBlockHash(height);
+    if(opts.db.rawblocks && opts.db.remove_orphan_rawblocks) {
+        await db.deleteRawBlock(height, hash);
+    }
+}
+
+async function get_rawblock(height, hash) {
+    var rawblock;
+    if(opts.db.rawblocks) {
+        rawblock = await db.getRawBlock(height, hash);
+        if(!rawblock) {
+            throw('ERROR: getRawBlock ' + height + ' ' + hash);
+        }
+    } else {
+        rawblock = await rpc.getBlock(hash, false);
+        if(!rawblock) {
+            throw('ERROR: getBlock ' + hash);
+        }
+    }
+    return rawblock;
 }
 
 async function block_check() {
@@ -227,16 +409,12 @@ async function block_check() {
             throw('ERROR: getBlockHash');
         }
 
-        while(hash != db_hash.hash) {
+        while(hash != db_hash.hash && !aborting) {
             console.log('rollback height=' + height);
 
-            var rawblock = await rpc.getBlock(db_hash.hash, false);
-            if(!rawblock) {
-                throw('ERROR: getBlock');
-            }
+            var rawblock = await get_rawblock(height, db_hash.hash);
             var block = bitcoin.Block.fromHex(rawblock);
-
-            await block_rollback(block);
+            await block_rollback(block, db_hash.hash);
 
             if(height > 0) {
                 height--;
@@ -259,6 +437,17 @@ async function block_check() {
     prev_hash = height ? hash : null;
 }
 
+async function lastblock_rewrite() {
+    var last = await db.getLastBlockHeight();
+    if(last) {
+        var db_hash = await db.getBlockHash(last);
+        var rawblock = await get_rawblock(last, db_hash.hash);
+        var block = bitcoin.Block.fromHex(rawblock);
+        tx_sequence = db_hash.sequence;
+        await block_rewriter(block, db_hash.hash, block.timestamp, rawblock);
+    }
+}
+
 async function block_sync(suppress) {
     var new_block = false;
     var hash = await rpc.getBlockHash(height > 0 ? ++height : 0);
@@ -274,7 +463,7 @@ async function block_sync(suppress) {
         if(prev_hash == block_prevHash || prev_hash == null) {
             var time = block.timestamp;
 
-            await block_writer(block, hash, time);
+            await block_writer(block, hash, time, rawblock);
 
             if(!suppress) {
                 console.log("\r" + timestamp() + ' #' + height + ' ' + hash + ' ' + timestamp(time));
@@ -327,7 +516,7 @@ async function block_sync_tcp(suppress) {
         var block = blockdata.block;
         var time = block.timestamp;
 
-        await block_writer(block, hash, time);
+        await block_writer(block, hash, time, blockdata.rawblock);
 
         if(suppress && progress_flag) {
             progress_flag = false;
@@ -345,6 +534,7 @@ async function block_sync_tcp(suppress) {
     try {
         height = await db.getLastBlockHeight() || 0;
         await txs_parser_log(height, 'start');
+        await lastblock_rewrite();
         await block_check();
         progress_enabled();
         await block_sync_tcp(true);
