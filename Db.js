@@ -51,14 +51,20 @@ var str = function(val) {
     return Buffer.from(val, 'ascii');
 }
 
-var txid_min = hex('0000000000000000000000000000000000000000000000000000000000000000');
-var txid_max = hex('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-var uint8_min = uint8(0);
-var uint8_max = uint8(0xff);
-var uint32_min = uint32(0);
-var uint32_max = uint32(0xffffffff);
-var uint64_min = uint64(0);
-var uint64_max = uint64(UINT64(0xffffffff, 0xffffffff));
+var pad = function(len, val) {
+    var v = Buffer.alloc(len);
+    v.fill(val ? val : 0);
+    return v;
+}
+
+var txid_min = pad(32, 0);
+var txid_max = pad(32, 0xff);
+var uint8_min = pad(1, 0);
+var uint8_max = pad(1, 0xff);
+var uint32_min = pad(4, 0);
+var uint32_max = pad(4, 0xff);
+var uint64_min = pad(8, 0);
+var uint64_max = pad(8, 0xff);
 
 function Db(opts) {
     var homepath = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
