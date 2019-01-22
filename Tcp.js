@@ -26,6 +26,12 @@ var uint32 = function(val) {
     return v;
 }
 
+var uint32be = function(val) {
+    var v = Buffer.alloc(4);
+    v.writeUInt32BE(val);
+    return v;
+}
+
 var uint64 = function(val) {
     if(val > Number.MAX_SAFE_INTEGER) {
         throw 'Error: out of range';
@@ -74,7 +80,7 @@ var command = function(val) {
 var message = function(cmd, payload) {
     var checksum = sha256(sha256(payload));
     return Buffer.concat([
-        uint32(0xf9bea5da),
+        uint32be(0xdaa5bef9),
         command(cmd),
         uint32(payload.length),
         checksum.slice(0, 4),
