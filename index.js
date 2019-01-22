@@ -1,6 +1,6 @@
 var opts = require('config');
 var Rpc = require('./Rpc');
-var Tcp = require('./Tcp');
+var Tcp = require('./Tcp', opts);
 var bitcoin = require('./BitcoinjsExt')(require('bitcoinjs-lib'), opts);
 var UINT64 = require('cuint').UINT64;
 var Db = require('./Db');

@@ -2,8 +2,6 @@ var net = require('net');
 var bitcoin = require('bitcoinjs-lib');
 var sha256 = bitcoin.crypto.sha256;
 
-var PROTOCOL_VERSION = 70015;
-
 var debug = function(msg) {
     //console.log(msg);
 }
@@ -77,28 +75,6 @@ var command = function(val) {
     return Buffer.concat([str(val), pad(12 - val.length)]);
 }
 
-var message = function(cmd, payload) {
-    var checksum = sha256(sha256(payload));
-    return Buffer.concat([
-        uint32be(0xdaa5bef9),
-        command(cmd),
-        uint32(payload.length),
-        checksum.slice(0, 4),
-        payload
-    ]);
-}
-
-var msg_version = Buffer.concat([
-    uint32(PROTOCOL_VERSION),
-    uint64(0xd),
-    uint64(Math.round(new Date().getTime() / 1000)),
-    pad(26),
-    pad(26),
-    uint64(0xa5a5),
-    var_str('/blockstor:0.1.0/'),
-    uint32(0)
-]);
-
 var inventory_type = {
     ERROR: 0,
     MSG_TX: 1,
@@ -161,6 +137,30 @@ Reader.prototype.var_str = function() {
 
 function Tcp(opts) {
     var self = this;
+
+    var PROTOCOL_VERSION = opts.tcp.protocol_version;
+
+    var msg_version = Buffer.concat([
+        uint32(PROTOCOL_VERSION),
+        uint64(0xd),
+        uint64(Math.round(new Date().getTime() / 1000)),
+        pad(26),
+        pad(26),
+        uint64(0xa5a5),
+        var_str('/blockstor:0.1.0/'),
+        uint32(0)
+    ]);
+
+    var message = function(cmd, payload) {
+        var checksum = sha256(sha256(payload));
+        return Buffer.concat([
+            uint32be(opts.tcp.start_string),
+            command(cmd),
+            uint32(payload.length),
+            checksum.slice(0, 4),
+            payload
+        ]);
+    }
 
     var req_threshold = 50;
     var getdata_limit = 50;

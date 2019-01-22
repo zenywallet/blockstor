@@ -7,7 +7,9 @@
     },
     tcp: {
         host: 'localhost',
-        port: 9253
+        port: 9253,
+        protocol_version: 70015,
+        start_string: 0xdaa5bef9
     },
     server: {
         http_port: 8000,
