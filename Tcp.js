@@ -175,6 +175,7 @@ function Tcp(opts) {
     var height = 0;
     var block_queue = [];
     var aborting = false;
+    var status = {};
 
     function send_message(data) {
         if(!aborting) {
@@ -215,6 +216,7 @@ function Tcp(opts) {
     function command_dispatch(header, body) {
         switch(header.command) {
         case 'version':
+            status['version'] = 1;
             send_message(message('verack', Buffer.alloc(0)));
             break;
 
@@ -316,8 +318,12 @@ function Tcp(opts) {
         prev_hash = last_hash;
         client = new net.Socket();
 
+        client.on('error', console.dir);
+
         client.connect(opts.tcp.port, opts.tcp.host, function() {
             debug('connect');
+            status['connect'] = 1;
+
             send_message(message('version', msg_version));
         });
 
@@ -344,6 +350,11 @@ function Tcp(opts) {
                     check_getdata();
                     retry_count++;
                     if(retry_count > getblock_retry_limit) {
+                        if(!status['connect']) {
+                            console.log('ERROR: Cannot connect.');
+                        } else if(status['connect'] && !status['version']) {
+                            console.log('ERROR: No response.');
+                        }
                         return resolve(null);
                     }
                 }
