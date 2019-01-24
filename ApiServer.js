@@ -72,10 +72,14 @@ function ApiServer(opts, libs) {
                 };
             } else {
                 var addrval = await db.getAddrval(address);
-                return {
-                    balance: conv_uint64(addrval.value),
-                    utxo_count: addrval.utxo_count
-                };
+                if(addrval == null) {
+                    return {};
+                } else {
+                    return {
+                        balance: conv_uint64(addrval.value),
+                        utxo_count: addrval.utxo_count
+                    };
+                }
             }
         }
 
