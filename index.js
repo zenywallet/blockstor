@@ -158,7 +158,7 @@ async function txouts(tx, txid, sequence, txouts_cb) {
                     addrvals.push({address: addresses[i], value: amount});
                 }
             } else {
-                address = '#' + txid + '-' + n;
+                address = '@' + txid + '-' + n;
                 await txouts_cb(txid, n, sequence, amount, [address]);
                 addrvals.push({address: address, value: amount});
             }

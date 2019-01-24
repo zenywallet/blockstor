@@ -139,7 +139,7 @@ function MemPool(opts, libs) {
                         rawmempool_addr_warning[address] = 1;
                     }
                     if(!address) {
-                        address = '#' + txid + '-' + n;
+                        address = '@' + txid + '-' + n;
                         n_outs[address] = amount;
                         pushex(rawmempool_addr_txouts, address, txout_data);
 
