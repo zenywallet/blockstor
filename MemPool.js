@@ -142,9 +142,6 @@ function MemPool(opts, libs) {
                         address = '@' + txid + '-' + n;
                         n_outs[address] = amount;
                         pushex(rawmempool_addr_txouts, address, txout_data);
-
-                        var asm = bitcoin.script.toASM(chunks);
-                        console.log("\rINFO: Unknown address asm=" + asm);
                     }
                 }
                 rawmempool_txouts[out_txid_n] = n_outs;
