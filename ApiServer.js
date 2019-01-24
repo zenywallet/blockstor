@@ -125,6 +125,14 @@ function ApiServer(opts, libs) {
             return utxos;
         }
 
+        async function get_addrlogs(address) {
+            var addrlogs = await db.getAddrlogs(address);
+            for(var i in addrlogs) {
+                addrlogs[i].value = conv_uint64(addrlogs[i].value);
+            }
+            return addrlogs;
+        }
+
         // GET - /addr/{addr}
         router.get('/addr/:addr', async function(req, res) {
             res.json({err: 0, res: await get_addr(req.params.addr)});
@@ -155,6 +163,22 @@ function ApiServer(opts, libs) {
                 utxos.push(await get_utxos(addr));
             }
             res.json({err: 0, res: utxos});
+        });
+
+        // GET - /addrlog/{addr}
+        router.get('/addrlog/:addr', async function(req, res) {
+            res.json({err: 0, res: await get_addrlogs(req.params.addr)});
+        });
+
+        // POST - {addrs: [addr1, addr2, ..., addrN]}
+        router.post('/addrlogs', async function(req, res) {
+            var addrs = req.body.addrs;
+            var multilogs = [];
+            for(var i in addrs) {
+                var addr = addrs[i];
+                multilogs.push(await get_addrlogs(addr));
+            }
+            res.json({err: 0, res: multilogs});
         });
 
         app.use('/api', router);
