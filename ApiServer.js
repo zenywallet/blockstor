@@ -121,7 +121,6 @@ function ApiServer(opts, libs) {
             for(var i in utxos) {
                 utxos[i].value = conv_uint64(utxos[i].value);
             }
-
             return utxos;
         }
 
@@ -180,7 +179,7 @@ function ApiServer(opts, libs) {
 
         app.use('/api', router);
         app.use(function(err, req, res, next) {
-            res.send({err:1, res: err.message});
+            res.send({err: 1, res: err.message});
         });
 
         app.listen(opts.server.http_port);
