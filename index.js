@@ -531,6 +531,8 @@ async function block_sync_tcp(suppress) {
 }
 
 ;(async function() {
+    apiserver.start();
+
     try {
         height = await db.getLastBlockHeight() || 0;
         await txs_parser_log(height, 'start');
@@ -573,5 +575,5 @@ async function block_sync_tcp(suppress) {
     }
 
     worker();
-    apiserver.start();
+    apiserver.ready(true);
 })();

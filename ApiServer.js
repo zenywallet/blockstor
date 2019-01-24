@@ -6,6 +6,11 @@ function ApiServer(opts, libs) {
     var db = libs.db;
     var mempool = libs.mempool;
     var app;
+    var errval = 2;
+
+    this.ready = function(flag) {
+        errval = flag ? 0 : 2;
+    }
 
     this.start = function() {
         app = express();
@@ -134,7 +139,7 @@ function ApiServer(opts, libs) {
 
         // GET - /addr/{addr}
         router.get('/addr/:addr', async function(req, res) {
-            res.json({err: 0, res: await get_addr(req.params.addr)});
+            res.json({err: errval, res: await get_addr(req.params.addr)});
         });
 
         // POST - {addrs: [addr1, addr2, ..., addrN]}
@@ -144,12 +149,12 @@ function ApiServer(opts, libs) {
             for(var i in addrs) {
                 balances.push(await get_addr(addrs[i]));
             }
-            res.json({err: 0, res: balances});
+            res.json({err: errval, res: balances});
         });
 
         // GET - /utxo/{addr}
         router.get('/utxo/:addr', async function(req, res) {
-            res.json({err: 0, res: await get_utxos(req.params.addr)});
+            res.json({err: errval, res: await get_utxos(req.params.addr)});
         });
 
         // POST - {addrs: [addr1, addr2, ..., addrN]}
@@ -159,12 +164,12 @@ function ApiServer(opts, libs) {
             for(var i in addrs) {
                 utxos.push(await get_utxos(addrs[i]));
             }
-            res.json({err: 0, res: utxos});
+            res.json({err: errval, res: utxos});
         });
 
         // GET - /addrlog/{addr}
         router.get('/addrlog/:addr', async function(req, res) {
-            res.json({err: 0, res: await get_addrlogs(req.params.addr)});
+            res.json({err: errval, res: await get_addrlogs(req.params.addr)});
         });
 
         // POST - {addrs: [addr1, addr2, ..., addrN]}
@@ -174,7 +179,7 @@ function ApiServer(opts, libs) {
             for(var i in addrs) {
                 multilogs.push(await get_addrlogs(addrs[i]));
             }
-            res.json({err: 0, res: multilogs});
+            res.json({err: errval, res: multilogs});
         });
 
         app.use('/api', router);
