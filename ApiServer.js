@@ -143,8 +143,7 @@ function ApiServer(opts, libs) {
             var addrs = req.body.addrs;
             var balances = [];
             for(var i in addrs) {
-                var addr = addrs[i];
-                balances.push(await get_addr(addr));
+                balances.push(await get_addr(addrs[i]));
             }
             res.json({err: 0, res: balances});
         });
@@ -159,8 +158,7 @@ function ApiServer(opts, libs) {
             var addrs = req.body.addrs;
             var utxos = [];
             for(var i in addrs) {
-                var addr = addrs[i];
-                utxos.push(await get_utxos(addr));
+                utxos.push(await get_utxos(addrs[i]));
             }
             res.json({err: 0, res: utxos});
         });
@@ -175,8 +173,7 @@ function ApiServer(opts, libs) {
             var addrs = req.body.addrs;
             var multilogs = [];
             for(var i in addrs) {
-                var addr = addrs[i];
-                multilogs.push(await get_addrlogs(addr));
+                multilogs.push(await get_addrlogs(addrs[i]));
             }
             res.json({err: 0, res: multilogs});
         });
