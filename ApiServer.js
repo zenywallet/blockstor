@@ -132,7 +132,11 @@ function ApiServer(opts, libs) {
         async function get_addrlogs(address) {
             var addrlogs = await db.getAddrlogs(address);
             for(var i in addrlogs) {
-                addrlogs[i].value = conv_uint64(addrlogs[i].value);
+                var addrlog = addrlogs[i];
+                addrlog.value = conv_uint64(addrlog.value);
+                var tx = await db.getTx(addrlog.txid);
+                addrlog.height = tx.height;
+                addrlog.time = tx.time;
             }
             return addrlogs;
         }
