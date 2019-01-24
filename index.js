@@ -277,7 +277,7 @@ async function block_writer(block, hash, time, rawblock) {
         async function addrins(txid, sequence, addrval) {
             var val = await db.getAddrval(addrval.address);
             if(val == null) {
-                throw('ERROR: Address not found ' + address);
+                throw('ERROR: Address not found ' + addrval.address);
             }
 
             await db.setAddrval(addrval.address, val.value.subtract(addrval.value), val.utxo_count - addrval.utxo_count);
@@ -358,7 +358,7 @@ async function block_rollback(block, hash) {
         async function addrins(txid, sequence, addrval) {
             var val = await db.getAddrval(addrval.address);
             if(val == null) {
-                throw('ERROR: Address not found ' + address);
+                throw('ERROR: Address not found ' + addrval.address);
             }
 
             await db.delAddrlog(addrval.address, sequence, 0);
@@ -367,7 +367,7 @@ async function block_rollback(block, hash) {
         async function addrouts(txid, sequence, addrval) {
             var val = await db.getAddrval(addrval.address);
             if(val == null) {
-                throw('ERROR: Address not found ' + address);
+                throw('ERROR: Address not found ' + addrval.address);
             }
 
             await db.delAddrlog(addrval.address, sequence, 1);
