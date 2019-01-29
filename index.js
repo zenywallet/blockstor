@@ -147,7 +147,7 @@ async function txouts(tx, txid, sequence, txouts_cb) {
                 var chunk = chunks[k];
                 if(Buffer.isBuffer(chunk) && chunk.length !== 1) {
                     try {
-                        address = bitcoin.ECPair.fromPublicKeyBuffer(chunk, network).getAddress();
+                        address = bitcoin.payments.p2pkh({ pubkey: chunk, network: network }).address;
                         addresses.push(address);
                     } catch(ex) {}
                 }

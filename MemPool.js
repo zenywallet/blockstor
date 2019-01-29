@@ -125,7 +125,7 @@ function MemPool(opts, libs) {
                         if(Buffer.isBuffer(chunk) && chunk.length !== 1) {
                             address = null;
                             try {
-                                address = bitcoin.ECPair.fromPublicKeyBuffer(chunk, network).getAddress();
+                                address = bitcoin.payments.p2pkh({ pubkey: chunk, network: network }).address;
                             } catch(ex) {}
 
                             if(address) {
