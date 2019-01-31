@@ -324,25 +324,25 @@ function Db(opts) {
     }
 
     this.getUnspents = function(address) {
-        var p_unspent = uint8(prefix.unspents);
-        var str_addr = str(address);
-        var start = Buffer.concat([
-            p_unspent,
-            str_addr,
-            uint64_min,
-            txid_min,
-            uint32_min
-        ]);
-        var end = Buffer.concat([
-            p_unspent,
-            str_addr,
-            uint64_max,
-            txid_max,
-            uint32_max
-        ]);
-
-        var unspents = [];
         return new Promise(function(resolve, reject) {
+            var p_unspent = uint8(prefix.unspents);
+            var str_addr = str(address);
+            var start = Buffer.concat([
+                p_unspent,
+                str_addr,
+                uint64_min,
+                txid_min,
+                uint32_min
+            ]);
+            var end = Buffer.concat([
+                p_unspent,
+                str_addr,
+                uint64_max,
+                txid_max,
+                uint32_max
+            ]);
+
+            var unspents = [];
             db.createReadStream({
                 gte: start,
                 lte: end
@@ -438,23 +438,23 @@ function Db(opts) {
     }
 
     this.getAddrlogs = function(address, sequence) { // address, [sequence]
-        var p_addrlog = uint8(prefix.addrlogs);
-        var str_addr = str(address);
-        var start = Buffer.concat([
-            p_addrlog,
-            str_addr,
-            uint64_min,
-            uint8_min
-        ]);
-        var end = Buffer.concat([
-            p_addrlog,
-            str_addr,
-            sequence ? uint64(sequence) : uint64_max,
-            uint8_max
-        ]);
-
-        var addrlogs = [];
         return new Promise(function(resolve, reject) {
+            var p_addrlog = uint8(prefix.addrlogs);
+            var str_addr = str(address);
+            var start = Buffer.concat([
+                p_addrlog,
+                str_addr,
+                uint64_min,
+                uint8_min
+            ]);
+            var end = Buffer.concat([
+                p_addrlog,
+                str_addr,
+                sequence ? uint64(sequence) : uint64_max,
+                uint8_max
+            ]);
+
+            var addrlogs = [];
             db.createReadStream({
                 gte: start,
                 lt: end,
@@ -479,23 +479,23 @@ function Db(opts) {
     }
 
     this.checkAddrlogExist = function(address) {
-        var p_addrlog = uint8(prefix.addrlogs);
-        var str_addr = str(address);
-        var start = Buffer.concat([
-            p_addrlog,
-            str_addr,
-            uint64_min,
-            uint8_min
-        ]);
-        var end = Buffer.concat([
-            p_addrlog,
-            str_addr,
-            uint64_max,
-            uint8_max
-        ]);
-
-        var exist = false;
         return new Promise(function(resolve, reject) {
+            var p_addrlog = uint8(prefix.addrlogs);
+            var str_addr = str(address);
+            var start = Buffer.concat([
+                p_addrlog,
+                str_addr,
+                uint64_min,
+                uint8_min
+            ]);
+            var end = Buffer.concat([
+                p_addrlog,
+                str_addr,
+                uint64_max,
+                uint8_max
+            ]);
+
+            var exist = false;
             db.createReadStream({
                 gte: start,
                 lte: end,
@@ -544,14 +544,14 @@ function Db(opts) {
     }
 
     this.getMarkers = function(sequence) {
-        var start = Buffer.concat([
-            uint8(prefix.markers)
-        ]);
-        var end = Buffer.concat([
-            uint8(prefix.markers + 1)
-        ]);
-
         return new Promise(function(resolve, reject) {
+            var start = Buffer.concat([
+                uint8(prefix.markers)
+            ]);
+            var end = Buffer.concat([
+                uint8(prefix.markers + 1)
+            ]);
+
             var apikeys = [];
             db.createReadStream({
                 gte: start,
