@@ -9,7 +9,8 @@ var prefix = {
     txouts: 0x03,       // txid, n = sequence, value, [address, ..]
     unspents: 0x04,     // address, sequence, txid, n = value
     addrvals: 0x05,     // address = value, utxo_count
-    addrlogs: 0x06      // address, sequence, type (0 - out | 1 - in) = txid, value
+    addrlogs: 0x06,     // address, sequence, type (0 - out | 1 - in) = txid, value
+    markers: 0x07       // apikey = sequence
 };
 
 var rocksdb_opts = {
@@ -517,6 +518,63 @@ function Db(opts) {
             str(address),
             uint64(sequence),
             uint8(type)
+        ]);
+        return self.del(key);
+    }
+
+    this.setMarker = function(apikey, sequence) {
+        var key = Buffer.concat([
+            uint8(prefix.markers),
+            str(apikey)
+        ]);
+        var val = Buffer.concat([
+            uint64(sequence)
+        ]);
+        return self.put(key, val);
+    }
+
+    this.getMarker = function(apikey) {
+        var key = Buffer.concat([
+            uint8(prefix.markers),
+            str(apikey)
+        ]);
+        return self.get(key, function(res) {
+            return res.readUInt32BE(0) * 0x100000000 + res.readUInt32BE(4);
+        });
+    }
+
+    this.getMarkers = function(sequence) {
+        var start = Buffer.concat([
+            uint8(prefix.markers)
+        ]);
+        var end = Buffer.concat([
+            uint8(prefix.markers + 1)
+        ]);
+
+        return new Promise(function(resolve, reject) {
+            var apikeys = [];
+            db.createReadStream({
+                gte: start,
+                lt: end
+            }).on('data', function(res) {
+                apikeys.push({
+                    apikey: res.key.slice(1).toString(),
+                    sequence: res.value.readUInt32BE(0) * 0x100000000 + res.value.readUInt32BE(4)
+                });
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                resolve(apikeys);
+            });
+        });
+    }
+
+    this.delMarker = function(apikey) {
+        var key = Buffer.concat([
+            uint8(prefix.markers),
+            str(apikey)
         ]);
         return self.del(key);
     }
