@@ -7,7 +7,7 @@ function Marker(opts, libs) {
         var markers = await db.getMarkers();
         for(var i in markers) {
             if(markers[i].sequence > sequence) {
-                await db.setMarker(markers[i].apikey, sequence);
+                await db.setMarker(markers[i].apikey, sequence, 1);
             }
         }
     }

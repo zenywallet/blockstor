@@ -14,7 +14,8 @@ function ApiServer(opts, libs) {
         ERROR: 1,
         SYNCING: 2,
         ROLLBACKING: 3,
-        UNKNOWN_APIKEY: 4
+        ROLLBACKED: 4,
+        UNKNOWN_APIKEY: 5
     }
 
     this.status_code = {
@@ -217,10 +218,16 @@ function ApiServer(opts, libs) {
         // POST - {apikey: apikey, sequence: sequence}
         router.post('/marker', async function(req, res) {
             var apikey = req.body.apikey;
+            var sequence = req.body.sequence;
             if(opts.apikeys[apikey]) {
                 if(!marker.rollbacking) {
-                    await db.setMarker(apikey, req.body.sequence);
-                    res.json({err: error_code.SUCCESS});
+                    var check_marker = await db.getMarker(apikey);
+                    if(!check_marker.rollback || check_marker.sequence == sequence) {
+                        await db.setMarker(apikey, sequence, 0);
+                        res.json({err: error_code.SUCCESS});
+                    } else {
+                        res.json({err: error_code.ROLLBACKED, res: check_marker.sequence});
+                    }
                 } else {
                     res.json({err: error_code.ROLLBACKING});
                 }

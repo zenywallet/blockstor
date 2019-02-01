@@ -10,7 +10,7 @@ var prefix = {
     unspents: 0x04,     // address, sequence, txid, n = value
     addrvals: 0x05,     // address = value, utxo_count
     addrlogs: 0x06,     // address, sequence, type (0 - out | 1 - in) = txid, value
-    markers: 0x07       // apikey = sequence
+    markers: 0x07       // apikey = sequence, rollback
 };
 
 var rocksdb_opts = {
@@ -522,13 +522,14 @@ function Db(opts) {
         return self.del(key);
     }
 
-    this.setMarker = function(apikey, sequence) {
+    this.setMarker = function(apikey, sequence, rollback) {
         var key = Buffer.concat([
             uint8(prefix.markers),
             str(apikey)
         ]);
         var val = Buffer.concat([
-            uint64(sequence)
+            uint64(sequence),
+            uint8(rollback)
         ]);
         return self.put(key, val);
     }
@@ -539,7 +540,10 @@ function Db(opts) {
             str(apikey)
         ]);
         return self.get(key, function(res) {
-            return res.readUInt32BE(0) * 0x100000000 + res.readUInt32BE(4);
+            return {
+                sequence: res.readUInt32BE(0) * 0x100000000 + res.readUInt32BE(4),
+                rollback: res.readUInt8(8)
+            };
         });
     }
 
@@ -559,7 +563,8 @@ function Db(opts) {
             }).on('data', function(res) {
                 apikeys.push({
                     apikey: res.key.slice(1).toString(),
-                    sequence: res.value.readUInt32BE(0) * 0x100000000 + res.value.readUInt32BE(4)
+                    sequence: res.value.readUInt32BE(0) * 0x100000000 + res.value.readUInt32BE(4),
+                    rollback: res.value.readUInt8(8)
                 });
             }).on('error', function(err) {
                 reject(err);
