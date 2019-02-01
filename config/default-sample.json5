@@ -32,5 +32,8 @@
             wif: 0x80
         }
     },
-    target_network: 'bitzeny'
+    target_network: 'bitzeny',
+    apikeys: {
+        'some-api-key-value': 'requester description'
+    }
 }

@@ -5,11 +5,28 @@ var UINT64 = require('cuint').UINT64;
 function ApiServer(opts, libs) {
     var db = libs.db;
     var mempool = libs.mempool;
+    var marker = libs.marker;
+    var self = this;
     var app;
-    var errval = 2;
 
-    this.ready = function(flag) {
-        errval = flag ? 0 : 2;
+    var error_code = {
+        SUCCESS: 0,
+        ERROR: 1,
+        SYNCING: 2,
+        ROLLBACKING: 3,
+        UNKNOWN_APIKEY: 4
+    }
+
+    this.status_code = {
+        SYNCED: 0,
+        SYNCING: 2,
+        ROLLBACKING: 3
+    }
+
+    var errval = self.status_code.SYNCING;
+
+    this.set_status = function(status_code) {
+        errval = status_code;
     }
 
     this.start = function() {
@@ -184,6 +201,32 @@ function ApiServer(opts, libs) {
                 multilogs.push(await get_addrlogs(addrs[i]));
             }
             res.json({err: errval, res: multilogs});
+        });
+
+        // GET - /marker/{apikey}
+        router.get('/marker/:apikey', async function(req, res) {
+            var apikey = req.params.apikey;
+            if(opts.apikeys[apikey]) {
+                var sequence = await db.getMarker(apikey) || 0;
+                res.json({err: error_code.SUCCESS, res: sequence});
+            } else {
+                res.json({err: error_code.UNKNOWN_APIKEY});
+            }
+        });
+
+        // POST - {apikey: apikey, sequence: sequence}
+        router.post('/marker', async function(req, res) {
+            var apikey = req.body.apikey;
+            if(opts.apikeys[apikey]) {
+                if(!marker.rollbacking) {
+                    await db.setMarker(apikey, req.body.sequence);
+                    res.json({err: error_code.SUCCESS});
+                } else {
+                    res.json({err: error_code.ROLLBACKING});
+                }
+            } else {
+                res.json({err: error_code.UNKNOWN_APIKEY});
+            }
         });
 
         app.use('/api', router);

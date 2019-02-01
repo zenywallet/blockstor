@@ -5,6 +5,7 @@ var bitcoin = require('./BitcoinjsExt')(require('bitcoinjs-lib'), opts);
 var UINT64 = require('cuint').UINT64;
 var Db = require('./Db');
 var MemPool = require('./MemPool');
+var Marker = require('./Marker');
 var ApiServer = require('./ApiServer');
 var rpc = new Rpc(opts);
 rpc.cb = function(cmd, err, res) {
@@ -23,7 +24,8 @@ rpc.cb = function(cmd, err, res) {
 var db = new Db(opts);
 var network = bitcoin.networks[opts.target_network];
 var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
-var apiserver = new ApiServer(opts, {db: db, mempool: mempool});
+var marker = new Marker(opts, {db: db});
+var apiserver = new ApiServer(opts, {db: db, mempool: mempool, marker: marker});
 
 var aborting = false;
 async function abort() {
@@ -409,23 +411,28 @@ async function block_check() {
             throw('ERROR: getBlockHash');
         }
 
-        while(hash != db_hash.hash && !aborting) {
-            console.log('rollback height=' + height);
+        if(hash != db_hash.hash && !aborting) {
+            apiserver.set_status(apiserver.status_code.ROLLBACKING);
+            marker.rollbacking = true;
+            do {
+                console.log('rollback height=' + height);
 
-            var rawblock = await get_rawblock(height, db_hash.hash);
-            var block = bitcoin.Block.fromHex(rawblock);
-            await block_rollback(block, db_hash.hash);
+                var rawblock = await get_rawblock(height, db_hash.hash);
+                var block = bitcoin.Block.fromHex(rawblock);
+                await block_rollback(block, db_hash.hash);
 
-            if(height > 0) {
-                height--;
-            } else {
-                break;
-            }
+                if(height > 0) {
+                    height--;
+                } else {
+                    break;
+                }
 
-            [hash, db_hash] = await Promise.all([rpc.getBlockHash(height), db.getBlockHash(height)]);
-            if(hash == null || db_hash == null) {
-                throw('ERROR: getBlockHash');
-            }
+                [hash, db_hash] = await Promise.all([rpc.getBlockHash(height), db.getBlockHash(height)]);
+                if(hash == null || db_hash == null) {
+                    throw('ERROR: getBlockHash');
+                }
+            } while(hash != db_hash.hash && !aborting);
+            await marker.rollback_markers(tx_sequence);
         }
     } else {
         height = 0;
@@ -482,6 +489,11 @@ async function block_sync(suppress) {
 
     if(!hash && height > 0) {
         height--;
+    }
+
+    if(marker.rollbacking) {
+        marker.rollbacking = false;
+        apiserver.set_status(apiserver.status_code.SYNCED);
     }
 
     return new_block;
@@ -575,5 +587,5 @@ async function block_sync_tcp(suppress) {
     }
 
     worker();
-    apiserver.ready(true);
+    apiserver.set_status(apiserver.status_code.SYNCED);
 })();
