@@ -543,7 +543,7 @@ function Db(opts) {
         });
     }
 
-    this.getMarkers = function(sequence) {
+    this.getMarkers = function() {
         return new Promise(function(resolve, reject) {
             var start = Buffer.concat([
                 uint8(prefix.markers)
