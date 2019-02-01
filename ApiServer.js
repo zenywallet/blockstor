@@ -16,7 +16,7 @@ function ApiServer(opts, libs) {
         ROLLBACKING: 3,
         ROLLBACKED: 4,
         UNKNOWN_APIKEY: 5
-    }
+    };
 
     this.status_code = {
         SYNCED: 0,

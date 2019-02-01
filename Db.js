@@ -433,7 +433,7 @@ function Db(opts) {
             return {
                 txid: res.slice(0, 32).toString('hex'),
                 value: UINT64(res.readUInt32BE(36), res.readUInt32BE(32))
-            }
+            };
         });
     }
 
