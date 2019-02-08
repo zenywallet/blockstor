@@ -241,7 +241,12 @@ function ApiServer(opts, libs) {
             res.send({err: 1, res: err.message});
         });
 
+        if(opts.server.http_port == opts.server.ws_port) {
+            return app;
+        }
+
         app.listen(opts.server.http_port);
+        return null;
     }
 }
 

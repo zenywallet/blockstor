@@ -7,6 +7,7 @@ var Db = require('./Db');
 var MemPool = require('./MemPool');
 var Marker = require('./Marker');
 var ApiServer = require('./ApiServer');
+var ApiStream = require('./ApiStream');
 var rpc = new Rpc(opts);
 rpc.cb = function(cmd, err, res) {
     if(err) {
@@ -26,6 +27,7 @@ var network = bitcoin.networks[opts.target_network];
 var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
 var marker = new Marker(opts, {db: db});
 var apiserver = new ApiServer(opts, {db: db, mempool: mempool, marker: marker});
+var apistream = new ApiStream(opts);
 
 var aborting = false;
 async function abort() {
@@ -543,7 +545,8 @@ async function block_sync_tcp(suppress) {
 }
 
 ;(async function() {
-    apiserver.start();
+    var app = apiserver.start();
+    apistream.start(app);
 
     try {
         height = await db.getLastBlockHeight() || 0;
@@ -588,4 +591,6 @@ async function block_sync_tcp(suppress) {
 
     worker();
     apiserver.set_status(apiserver.status_code.SYNCED);
+
+
 })();
