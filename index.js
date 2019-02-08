@@ -254,7 +254,7 @@ async function txs_parser_log(height, status, mode) {
     }
 }
 
-async function block_writer(block, hash, time, rawblock) {
+async function block_writer_without_stream(block, hash, time, rawblock) {
     if(opts.db.rawblocks) {
         await db.setRawBlock(height, hash, rawblock, now());
     }
@@ -295,6 +295,86 @@ async function block_writer(block, hash, time, rawblock) {
             await db.setAddrlog(addrval.address, sequence, 1, txid, addrval.value);
         }
     );
+}
+
+function conv_uint64(uint64_val) {
+    strval = uint64_val.toString();
+    val = parseInt(strval);
+    if(val > Number.MAX_SAFE_INTEGER) {
+        return strval;
+    }
+    return val;
+}
+
+async function block_writer_with_stream(block, hash, time, rawblock) {
+    var stream_data = {blocks: {}, addrs: {}, txs: {}};
+    stream_data.blocks[height] = {hash: hash, time: time};
+
+    if(opts.db.rawblocks) {
+        await db.setRawBlock(height, hash, rawblock, now());
+    }
+    await db.setBlockHash(height, hash, time, tx_sequence);
+
+    await txs_parser(block,
+        async function txs(txid, sequence) {
+            await db.setTx(txid, height, time, sequence);
+
+            stream_data.txs[sequence] = {txid: txid, height: height};
+        },
+        async function txins(txid, n, sequence, txout) {
+            for(var i in txout.addresses) {
+                var address = txout.addresses[i];
+                await db.delUnspent(address, txout.sequence, txid, n);
+            }
+        },
+        async function txouts(txid, n, sequence, amount, addresses) {
+            await db.setTxout(txid, n, sequence, amount, addresses);
+
+            for(var i in addresses) {
+                var address = addresses[i];
+                await db.setUnspent(address, sequence, txid, n, amount);
+            }
+        },
+        async function addrins(txid, sequence, addrval) {
+            var val = await db.getAddrval(addrval.address);
+            if(val == null) {
+                throw('ERROR: Address not found ' + addrval.address);
+            }
+
+            var balance = val.value.subtract(addrval.value);
+            var utxo_count = val.utxo_count - addrval.utxo_count;
+            await db.setAddrval(addrval.address, balance, utxo_count);
+            await db.setAddrlog(addrval.address, sequence, 0, txid, addrval.value);
+
+            if(addrval.address.charAt(0) != '@') {
+                stream_data.addrs[addrval.address] = {balance: conv_uint64(balance), utxo_count: utxo_count, sequence: sequence};
+            }
+        },
+        async function addrouts(txid, sequence, addrval) {
+            var val = await db.getAddrval(addrval.address);
+            val = val ? val : {value: UINT64(0), utxo_count: 0};
+
+            var balance = val.value.add(addrval.value);
+            var utxo_count = val.utxo_count + addrval.utxo_count;
+            await db.setAddrval(addrval.address, balance, utxo_count);
+            await db.setAddrlog(addrval.address, sequence, 1, txid, addrval.value);
+
+            if(addrval.address.charAt(0) != '@') {
+                stream_data.addrs[addrval.address] = {balance: conv_uint64(balance), utxo_count: utxo_count, sequence: sequence};
+            }
+        }
+    );
+
+    apistream.send_all(stream_data);
+}
+
+var block_writer = block_writer_without_stream;
+function enable_block_writer_stream(flag) {
+    if(flag) {
+        block_writer = block_writer_with_stream;
+    } else {
+        block_writer = block_writer_without_stream;
+    }
 }
 
 async function block_rewriter(block, hash, time, rawblock) {
@@ -565,6 +645,8 @@ async function block_sync_tcp(suppress) {
         console.log(ex);
         await abort();
     }
+
+    enable_block_writer_stream(true);
 
     async function worker() {
         try {

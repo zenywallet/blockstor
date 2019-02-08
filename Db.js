@@ -611,6 +611,31 @@ function Db(opts) {
             });
         });
     }
+
+    this.count = function(prefix_id) {
+        return new Promise(function(resolve, reject) {
+            var start = Buffer.concat([
+                uint8(prefix_id)
+            ]);
+            var end = Buffer.concat([
+                uint8(prefix_id + 1)
+            ]);
+
+            var count = 0;
+            db.createReadStream({
+                gte: start,
+                lt: end
+            }).on('data', function(res) {
+                count++;
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                resolve(count);
+            });
+        });
+    }
 }
 
 module.exports = Db;

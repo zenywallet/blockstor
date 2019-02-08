@@ -79,11 +79,6 @@ function ApiStream(opts) {
         if(app) {
             http_server.listen(opts.server.http_port);
         }
-
-        ;(function test() {
-            self.send_all({txs: 'hello!'});
-            setTimeout(test, 5000);
-        })();
     }
 }
 
