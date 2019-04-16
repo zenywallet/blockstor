@@ -61,4 +61,4 @@ typings/
 .next
 
 config/*
-!config/default-sample.json5
+!config/default-sample*.json5

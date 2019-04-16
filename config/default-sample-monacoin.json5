@@ -1,0 +1,38 @@
+{
+    rpc: {
+        host: 'localhost',
+        port: 9402,
+        user: 'username',
+        pass: 'password'
+    },
+    tcp: {
+        host: 'localhost',
+        port: 9401,
+        protocol_version: 70015,
+        start_string: 0xfbc0b6db
+    },
+    server: {
+        http_port: 8000,
+        ws_port: 8001
+    },
+    db: {
+        rawblocks: 0,
+        remove_orphan_rawblocks: 0
+    },
+    networks: {
+        monacoin: {
+            messagePrefix: '\u0019Monacoin Signed Message:\n',
+            bech32: 'mona',
+            bip32: {
+                public: 0x043587cf,
+                private: 0x04358394
+            },
+            pubKeyHash: 50,
+            scriptHash: 5,
+            scriptHash2: 55,
+            wif: 176,
+            old_wif: 178
+        }
+    },
+    target_network: 'monacoin'
+}
