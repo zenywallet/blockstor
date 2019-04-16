@@ -497,7 +497,7 @@ async function block_check() {
             apiserver.set_status(apiserver.status_code.ROLLBACKING);
             marker.rollbacking = true;
             do {
-                console.log('rollback height=' + height);
+                console.log('\rrollback height=' + height);
 
                 var rawblock = await get_rawblock(height, db_hash.hash);
                 var block = bitcoin.Block.fromHex(rawblock);
