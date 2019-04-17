@@ -307,8 +307,7 @@ function conv_uint64(uint64_val) {
 }
 
 async function block_writer_with_stream(block, hash, time, rawblock) {
-    var stream_data = {blocks: {}, addrs: {}, txs: {}};
-    stream_data.blocks[height] = {hash: hash, time: time};
+    var stream_data = {height: height, hash: hash, time: time, addrs: {}, txs: {}};
 
     if(opts.db.rawblocks) {
         await db.setRawBlock(height, hash, rawblock, now());
@@ -319,7 +318,7 @@ async function block_writer_with_stream(block, hash, time, rawblock) {
         async function txs(txid, sequence) {
             await db.setTx(txid, height, time, sequence);
 
-            stream_data.txs[sequence] = {txid: txid, height: height};
+            stream_data.txs[sequence] = txid;
         },
         async function txins(txid, n, sequence, txout) {
             for(var i in txout.addresses) {
