@@ -347,7 +347,9 @@ async function block_writer_with_stream(block, hash, time, rawblock) {
             await db.setAddrlog(addrval.address, sequence, 0, txid, addrval.value);
 
             if(addrval.address.charAt(0) != '@') {
-                stream_data.addrs[addrval.address] = {balance: conv_uint64(balance), utxo_count: utxo_count, sequence: sequence};
+                var vals = stream_data.addrs[addrval.address] ? stream_data.addrs[addrval.address].vals : [];
+                vals.push({sequence: sequence, type: 0, value: conv_uint64(addrval.value)});
+                stream_data.addrs[addrval.address] = {balance: conv_uint64(balance), utxo_count: utxo_count, vals: vals};
             }
         },
         async function addrouts(txid, sequence, addrval) {
@@ -360,7 +362,9 @@ async function block_writer_with_stream(block, hash, time, rawblock) {
             await db.setAddrlog(addrval.address, sequence, 1, txid, addrval.value);
 
             if(addrval.address.charAt(0) != '@') {
-                stream_data.addrs[addrval.address] = {balance: conv_uint64(balance), utxo_count: utxo_count, sequence: sequence};
+                var vals = stream_data.addrs[addrval.address] ? stream_data.addrs[addrval.address].vals : [];
+                vals.push({sequence: sequence, type: 1, value: conv_uint64(addrval.value)});
+                stream_data.addrs[addrval.address] = {balance: conv_uint64(balance), utxo_count: utxo_count, vals: vals};
             }
         }
     );
