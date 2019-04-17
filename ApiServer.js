@@ -30,6 +30,12 @@ function ApiServer(opts, libs) {
         errval = status_code;
     }
 
+    var height = null;
+
+    this.set_height = function(true_height) {
+        height = true_height;
+    }
+
     this.start = function() {
         app = express();
 
@@ -234,6 +240,11 @@ function ApiServer(opts, libs) {
             } else {
                 res.json({err: error_code.UNKNOWN_APIKEY});
             }
+        });
+
+        // GET - /height
+        router.get('/height', async function(req, res) {
+            res.json({err: height == null ? 1 : 0, res: height});
         });
 
         app.use('/api', router);

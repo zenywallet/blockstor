@@ -365,6 +365,7 @@ async function block_writer_with_stream(block, hash, time, rawblock) {
         }
     );
 
+    apiserver.set_height(height);
     apistream.send_all(stream_data);
 }
 
@@ -633,6 +634,7 @@ async function block_sync_tcp(suppress) {
         await txs_parser_log(height, 'start');
         await lastblock_rewrite();
         await block_check();
+        apiserver.set_height(height);
         progress_enabled();
         await block_sync_tcp(true);
         await block_sync(true);
