@@ -18,7 +18,7 @@ rpc.cb = function(cmd, err, res) {
                 return null;
             }
         }
-        console.log(err);
+        console.log('\r' + err);
     }
     return res;
 }
@@ -31,7 +31,7 @@ var apistream = new ApiStream(opts);
 
 var aborting = false;
 async function abort() {
-    console.log("\rabort");
+    console.log('\rabort');
     await db.close();
     process.exit(1);
     return new Promise(function() {});
@@ -61,7 +61,7 @@ function progress_agent() {
 function progress(msg) {
     if(process.stdout.clearLine) {
         process.stdout.clearLine();
-        process.stdout.write("\r" + msg);
+        process.stdout.write('\r' + msg);
     } else {
         console.log(msg);
     }
@@ -559,7 +559,7 @@ async function block_sync(suppress) {
             await block_writer(block, hash, time, rawblock);
 
             if(!suppress) {
-                console.log("\r" + timestamp() + ' #' + height + ' ' + hash + ' ' + timestamp(time));
+                console.log('\r' + timestamp() + ' #' + height + ' ' + hash + ' ' + timestamp(time));
             } else if(progress_flag) {
                 progress_flag = false;
                 txs_parser_log(height, timestamp(time) + ' (RPC mode)', true);
@@ -647,7 +647,7 @@ async function block_sync_tcp(suppress) {
             await abort();
         }
     } catch(ex) {
-        console.log(ex);
+        console.log('\r' + ex);
         await abort();
     }
 
@@ -671,7 +671,7 @@ async function block_sync_tcp(suppress) {
                 }, 1000);
             }
         } catch(ex) {
-            console.log(ex);
+            console.log('\r' + ex);
             await abort();
         }
     }

@@ -8,7 +8,7 @@ function ApiStream(opts) {
     function debug(msg) {
         if(process.stdout.clearLine) {
             process.stdout.clearLine();
-            console.log("\r" + msg);
+            console.log('\r' + msg);
         } else {
             console.log(msg);
         }

@@ -318,7 +318,9 @@ function Tcp(opts) {
         prev_hash = last_hash;
         client = new net.Socket();
 
-        client.on('error', console.dir);
+        client.on('error', function(err) {
+            console.log(err.toString());
+        });
 
         client.connect(opts.tcp.port, opts.tcp.host, function() {
             debug('connect');

@@ -168,9 +168,9 @@ function MemPool(opts, libs) {
                                     pushex(rawmempool_addr_spents, addr, txout_value[addr]);
                                 }
                                 rawmempool_spents[in_txid_n] = 1;
-                                console.log("\rINFO: mempool spent=" + in_txid_n);
+                                console.log('\rINFO: mempool spent=' + in_txid_n);
                             } else {
-                                console.log("\rINFO: mempool vout not found " + in_txid_n);
+                                console.log('\rINFO: mempool vout not found ' + in_txid_n);
                             }
                         }
                     }
@@ -185,7 +185,7 @@ function MemPool(opts, libs) {
         
         if(process.stdout.clearLine) {
             process.stdout.clearLine();
-            process.stdout.write("\rmempool: count=" + Object.keys(rawmempool_txs).length);
+            process.stdout.write('\rmempool: count=' + Object.keys(rawmempool_txs).length);
         }
 
         update_flag = false;
