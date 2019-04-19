@@ -3,6 +3,7 @@ function MemPool(opts, libs) {
     var rpc = libs.rpc;
     var db = libs.db;
     var network = libs.network;
+    var self = this;
 
     var rawmempool_rawtxs = {};
     var rawmempool_rawtxobjs = {};
@@ -24,12 +25,23 @@ function MemPool(opts, libs) {
         return {txouts: txouts, spents: spents, warning: warning};
     }
 
+    this.cb_stream_unconf = function(unconf) {}
+
     function pushex(obj, key, value) {
         if(!obj[key]) {
             obj[key] = [value];
         } else {
             obj[key].push(value);
         }
+    }
+
+    function conv_uint64(uint64_val) {
+        strval = uint64_val.toString();
+        val = parseInt(strval);
+        if(val > Number.MAX_SAFE_INTEGER) {
+            return strval;
+        }
+        return val;
     }
 
     var update_flag = false;
@@ -88,6 +100,10 @@ function MemPool(opts, libs) {
             }
         }
 
+        var stream_addrs = {};
+        var stream_addr_ins = {};
+        var stream_addr_outs = {};
+        var stream_addr_types = {};
         await Promise.all(mempool.map(async function(txid) {
             if(rawmempool_txs[txid]) {
                 return;
@@ -117,6 +133,11 @@ function MemPool(opts, libs) {
                 if(address) {
                     n_outs[address] = amount;
                     pushex(rawmempool_addr_txouts, address, txout_data);
+                    if(stream_addr_outs[address]) {
+                        stream_addr_outs[address].add(amount);
+                    } else {
+                        stream_addr_outs[address] = amount;
+                    }
                 } else {
                     var chunks;
                     chunks = bitcoin.script.decompile(output.script);
@@ -139,12 +160,29 @@ function MemPool(opts, libs) {
                     if(find_addresses.length > 1) {
                         for(var i in find_addresses) {
                             rawmempool_addr_warning[find_addresses[i]] = 1;
+                            if(stream_addr_outs[find_addresses[i]]) {
+                                stream_addr_outs[find_addresses[i]].add(amount);
+                            } else {
+                                stream_addr_outs[find_addresses[i]] = amount;
+                            }
+                            stream_addr_types[find_addresses[i]] = 2;
+                        }
+                    } else {
+                        if(stream_addr_outs[address]) {
+                            stream_addr_outs[address].add(amount);
+                        } else {
+                            stream_addr_outs[address] = amount;
                         }
                     }
                     if(!address) {
                         address = '@' + txid + '-' + n;
                         n_outs[address] = amount;
                         pushex(rawmempool_addr_txouts, address, txout_data);
+                        if(stream_addr_outs[address]) {
+                            stream_addr_outs[address].add(amount);
+                        } else {
+                            stream_addr_outs[address] = amount;
+                        }
                     }
                 }
                 rawmempool_txouts[out_txid_n] = n_outs;
@@ -161,6 +199,11 @@ function MemPool(opts, libs) {
                         for(var i in txout.addresses) {
                             var address = txout.addresses[i];
                             pushex(rawmempool_addr_spents, address, {txid: in_txid, n: n, value: txout.value});
+                            if(stream_addr_ins[address]) {
+                                stream_addr_ins[address].add(txout.value);
+                            } else {
+                                stream_addr_ins[address] = txout.value;
+                            }
                         }
                     } else {
                         var r_spent = rawmempool_spents[in_txid_n];
@@ -169,6 +212,11 @@ function MemPool(opts, libs) {
                             if(txout_value) {
                                 for(var addr in txout_value) {
                                     pushex(rawmempool_addr_spents, addr, txout_value[addr]);
+                                    if(stream_addr_ins[address]) {
+                                        stream_addr_ins[address].add(txout_value[addr]);
+                                    } else {
+                                        stream_addr_ins[address] = txout_value[addr];
+                                    }
                                 }
                                 rawmempool_spents[in_txid_n] = 1;
                                 console.log('\rINFO: mempool spent=' + in_txid_n);
@@ -181,7 +229,32 @@ function MemPool(opts, libs) {
             }));
 
             rawmempool_txs[txid] = 1;
+
+            for(var addr in stream_addr_ins) {
+                var conv_amount = conv_uint64(stream_addr_ins[addr]);
+                if(stream_addrs[addr]) {
+                    stream_addrs[addr][0] = conv_amount;
+                } else {
+                    var addrdata = {};
+                    addrdata[0] = conv_amount;
+                    stream_addrs[addr] = addrdata;
+                }
+            }
+            for(var addr in stream_addr_outs) {
+                var conv_amount = conv_uint64(stream_addr_outs[addr]);
+                var type = stream_addr_types[addr] ? 2 : 1;
+                if(stream_addrs[addr]) {
+                    stream_addrs[addr][type] = conv_amount;
+                } else {
+                    var addrdata = {};
+                    addrdata[type] = conv_amount;
+                    stream_addrs[addr] = addrdata;
+                }
+
+            }
+            self.cb_stream_unconf({unconf: txid, addrs: stream_addrs});
         }));
+
         rawmempool_addr_txouts_cache = Object.assign({}, rawmempool_addr_txouts);
         rawmempool_addr_spents_cache = Object.assign({}, rawmempool_addr_spents);
         rawmempool_addr_warning_cache = Object.assign({}, rawmempool_addr_warning);

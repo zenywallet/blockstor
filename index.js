@@ -652,6 +652,9 @@ async function block_sync_tcp(suppress) {
     }
 
     enable_block_writer_stream(true);
+    mempool.cb_stream_unconf = function(unconf) {
+        apistream.send_all(unconf);
+    }
 
     async function worker() {
         try {
