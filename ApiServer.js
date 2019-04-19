@@ -94,6 +94,15 @@ function ApiServer(opts, libs) {
                         utxo_count--;
                     }
                 }
+
+                if(unconfs.warning) {
+                    return {
+                        balance: conv_uint64(balance),
+                        utxo_count: utxo_count,
+                        unconf: {out: conv_uint64(unconf_out), in: conv_uint64(unconf_in), warning: nconfs.warning}
+                    };
+                }
+
                 return {
                     balance: conv_uint64(balance),
                     utxo_count: utxo_count,
