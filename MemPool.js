@@ -20,7 +20,8 @@ function MemPool(opts, libs) {
     this.unconfs = function(address) {
         var txouts = rawmempool_addr_txouts_cache[address];
         var spents = rawmempool_addr_spents_cache[address];
-        return {txouts: txouts, spents: spents};
+        var warning = rawmempool_addr_warning_cache[address];
+        return {txouts: txouts, spents: spents, warning: warning};
     }
 
     function pushex(obj, key, value) {
@@ -119,7 +120,7 @@ function MemPool(opts, libs) {
                 } else {
                     var chunks;
                     chunks = bitcoin.script.decompile(output.script);
-                    var find_count = 0;
+                    var find_addresses = [];
                     for(var k in chunks) {
                         var chunk = chunks[k];
                         if(Buffer.isBuffer(chunk) && chunk.length !== 1) {
@@ -131,12 +132,14 @@ function MemPool(opts, libs) {
                             if(address) {
                                 n_outs[address] = amount;
                                 pushex(rawmempool_addr_txouts, address, txout_data);
-                                find_count++;
+                                find_addresses.push(address);
                             }
                         }
                     }
-                    if(find_count > 1) {
-                        rawmempool_addr_warning[address] = 1;
+                    if(find_addresses.length > 1) {
+                        for(var i in find_addresses) {
+                            rawmempool_addr_warning[find_addresses[i]] = 1;
+                        }
                     }
                     if(!address) {
                         address = '@' + txid + '-' + n;
