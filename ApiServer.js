@@ -90,7 +90,7 @@ function ApiServer(opts, libs) {
                     });
                     for(var i in mempool_spents) {
                         var spent = mempool_spents[i];
-                        unconf_out.subtract(spent.value);
+                        unconf_out.add(spent.value);
                         utxo_count--;
                     }
                 }
