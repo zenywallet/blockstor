@@ -13,10 +13,12 @@ function MemPool(opts, libs) {
     var rawmempool_addr_txouts = {};
     var rawmempool_addr_spents = {};
     var rawmempool_addr_warning = {};
+    var rawmempool_addr_unconfs = {};
 
     var rawmempool_addr_txouts_cache = {};
     var rawmempool_addr_spents_cache = {};
     var rawmempool_addr_warning_cache = {};
+    var rawmempool_addr_unconfs_cache = {};
 
     this.unconfs = function(address) {
         var txouts = rawmempool_addr_txouts_cache[address];
@@ -26,6 +28,14 @@ function MemPool(opts, libs) {
     }
 
     this.cb_stream_unconf = function(unconf) {}
+
+    this.stream_unconfs = function(txid) {
+        var tx_unconfs = [];
+        for(var txid in rawmempool_addr_unconfs_cache) {
+            tx_unconfs.push({txid: txid, addrs: rawmempool_addr_unconfs_cache[txid]});
+        }
+        return tx_unconfs;
+    }
 
     function pushex(obj, key, value) {
         if(!obj[key]) {
@@ -82,6 +92,14 @@ function MemPool(opts, libs) {
             rawmempool_addr_txouts = {};
             rawmempool_addr_spents = {};
             rawmempool_addr_warning = {};
+
+            rawmempool_addr_unconfs = {};
+            for(var i in mempool) {
+                var txid = mempool[i];
+                if(rawmempool_addr_unconfs_cache[txid]) {
+                    rawmempool_addr_unconfs[txid] = rawmempool_addr_unconfs_cache[txid];
+                }
+            }
         }
 
         for(var i in mempool) {
@@ -104,6 +122,7 @@ function MemPool(opts, libs) {
         var stream_addr_ins = {};
         var stream_addr_outs = {};
         var stream_addr_types = {};
+        var new_txids = [];
         await Promise.all(mempool.map(async function(txid) {
             if(rawmempool_txs[txid]) {
                 return;
@@ -252,12 +271,24 @@ function MemPool(opts, libs) {
                 }
 
             }
-            self.cb_stream_unconf({unconf: txid, addrs: stream_addrs});
+
+            rawmempool_addr_unconfs[txid] = stream_addrs;
+            new_txids.push(txid);
         }));
+
+        var tx_addrs = [];
+        for(var i in new_txids) {
+            var txid = new_txids[i];
+            tx_addrs.push({txid: txid, addrs: rawmempool_addr_unconfs[txid]});
+        }
+        if(tx_addrs.length > 0) {
+            self.cb_stream_unconf({mempool: tx_addrs});
+        }
 
         rawmempool_addr_txouts_cache = Object.assign({}, rawmempool_addr_txouts);
         rawmempool_addr_spents_cache = Object.assign({}, rawmempool_addr_spents);
         rawmempool_addr_warning_cache = Object.assign({}, rawmempool_addr_warning);
+        rawmempool_addr_unconfs_cache = Object.assign({}, rawmempool_addr_unconfs);
         
         if(process.stdout.clearLine) {
             process.stdout.clearLine();

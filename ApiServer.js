@@ -232,6 +232,11 @@ function ApiServer(opts, libs) {
             res.json({err: errval, res: multilogs});
         });
 
+        // GET - /mempool
+        router.get('/mempool', async function(req, res) {
+            res.json({err: errval, res: mempool.stream_unconfs()});
+        });
+
         // GET - /marker/{apikey}
         router.get('/marker/:apikey', async function(req, res) {
             var apikey = req.params.apikey;
