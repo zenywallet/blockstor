@@ -55,11 +55,11 @@ function MemPool(opts, libs) {
     }
 
     var update_flag = false;
-    var reset_flag = false;
+    var reset_reserve = false;
     this.update = async function(reset) {
         if(update_flag) {
             if(reset) {
-                reset_flag = true;
+                reset_reserve = true;
             }
             return;
         }
@@ -67,8 +67,8 @@ function MemPool(opts, libs) {
 
         var mempool = await rpc.getRawMemPool();
 
-        if(reset || reset_flag) {
-            rest_flag = false;
+        if(reset || reset_reserve) {
+            reset_reserve = false;
 
             rawmempool_rawtxs_tmp = {};
             for(var i in mempool) {
