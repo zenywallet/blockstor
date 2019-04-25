@@ -37,7 +37,10 @@ async function abort() {
     return new Promise(function() {});
 }
 
-process.on('unhandledRejection', console.dir);
+process.on('unhandledRejection', function(err) {
+    console.dir(err);
+    abort();
+});
 
 ['SIGINT', 'SIGTERM'].forEach(function(evt) {
     process.on(evt, async function() {
@@ -660,11 +663,7 @@ async function block_sync_tcp(suppress) {
         try {
             await block_check();
             var new_block = await block_sync();
-            if(new_block) {
-                mempool.update(true);
-            } else {
-                mempool.update();
-            }
+            mempool.update(new_block);
 
             if(aborting) {
                 await abort();

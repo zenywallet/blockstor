@@ -5,36 +5,44 @@ function MemPool(opts, libs) {
     var network = libs.network;
     var self = this;
 
-    var rawmempool_rawtxs = {};
-    var rawmempool_rawtxobjs = {};
-    var rawmempool_txs = {};
-    var rawmempool_spents = {};
-    var rawmempool_txouts = {};
-    var rawmempool_addr_txouts = {};
-    var rawmempool_addr_spents = {};
-    var rawmempool_addr_warning = {};
-    var rawmempool_addr_unconfs = {};
+    var mp_txobjs = {};
+    var mp_txouts = {};
+    var mp_txins = {};
+    var mp_spents = {};
+    var mp_txaddrs = {};
 
-    var rawmempool_addr_txouts_cache = {};
-    var rawmempool_addr_spents_cache = {};
-    var rawmempool_addr_warning_cache = {};
-    var rawmempool_addr_unconfs_cache = {};
+    var mp_addr_txouts = {};
+    var mp_addr_spents = {};
+    var mp_addr_warning = {};
+
+    var mp_txobjs_cache = {};
+    var mp_txouts_cache = {};
+    var mp_txins_cache = {};
+    var mp_txaddrs_cache = {};
+
+    var mp_addr_txouts_cache = {};
+    var mp_addr_spents_cache = {};
+    var mp_addr_warning_cache = {};
 
     this.unconfs = function(address) {
-        var txouts = rawmempool_addr_txouts_cache[address];
-        var spents = rawmempool_addr_spents_cache[address];
-        var warning = rawmempool_addr_warning_cache[address];
+        var txouts = mp_addr_txouts_cache[address];
+        var spents = mp_addr_spents_cache[address];
+        var warning = mp_addr_warning_cache[address];
         return {txouts: txouts, spents: spents, warning: warning};
     }
 
     this.cb_stream_unconf = function(unconf) {}
 
-    this.stream_unconfs = function(txid) {
+    var mp_tx_unconfs = null;
+    this.stream_unconfs = function() {
         var tx_unconfs = [];
-        for(var txid in rawmempool_addr_unconfs_cache) {
-            tx_unconfs.push({txid: txid, addrs: rawmempool_addr_unconfs_cache[txid]});
+        if(!mp_tx_unconfs) {
+            for(var txid in mp_txaddrs_cache) {
+                tx_unconfs.push({txid: txid, addrs: mp_txaddrs_cache[txid]});
+            }
+            mp_tx_unconfs = tx_unconfs;
         }
-        return tx_unconfs;
+        return mp_tx_unconfs || tx_unconfs;
     }
 
     function pushex(obj, key, value) {
@@ -42,6 +50,14 @@ function MemPool(opts, libs) {
             obj[key] = [value];
         } else {
             obj[key].push(value);
+        }
+    }
+
+    function addex(obj, key, value) {
+        if(!obj[key]) {
+            obj[key] = value;
+        } else {
+            obj[key].add(value);
         }
     }
 
@@ -54,248 +70,258 @@ function MemPool(opts, libs) {
         return val;
     }
 
-    var update_flag = false;
+    function get_script_addresses(script, network) {
+        try {
+            var address = bitcoin.address.fromOutputScript(script, network);
+            return [address];
+        } catch(ex) {}
+
+        var addresses = [];
+        var chunks = bitcoin.script.decompile(script);
+        for(var k in chunks) {
+            var chunk = chunks[k];
+            if(Buffer.isBuffer(chunk) && chunk.length !== 1) {
+                try {
+                    var address = bitcoin.payments.p2pkh({ pubkey: chunk, network: network }).address;
+                    addresses.push(address);
+                } catch(ex) {}
+            }
+        }
+        if(addresses.length > 0) {
+            return addresses;
+        }
+        return ['@' + txid + '-' + n];
+    }
+
+    var updating = false;
     var reset_reserve = false;
     this.update = async function(reset) {
-        if(update_flag) {
-            if(reset) {
-                reset_reserve = true;
-            }
+        reset_reserve = reset_reserve || reset;
+        if(updating) {
             return;
         }
-        update_flag = true;
+        updating = true;
 
-        var mempool = await rpc.getRawMemPool();
+        var mp_txids = await rpc.getRawMemPool();
+        var mp_new_txids = [];
 
-        if(reset || reset_reserve) {
+        if(reset_reserve) {
             reset_reserve = false;
 
-            rawmempool_rawtxs_tmp = {};
-            for(var i in mempool) {
-                var txid = mempool[i];
-                if(rawmempool_rawtxs[txid]) {
-                    rawmempool_rawtxs_tmp[txid] = rawmempool_rawtxs[txid];
-                }
-            }
-            rawmempool_rawtxs = rawmempool_rawtxs_tmp;
-            rawmempool_rawtxobjs_tmp = {};
-            for(var i in mempool) {
-                var txid = mempool[i];
-                if(rawmempool_rawtxobjs[txid]) {
-                    rawmempool_rawtxobjs_tmp[txid] = rawmempool_rawtxobjs[txid];
-                }
-            }
-            rawmempool_rawtxobjs = rawmempool_rawtxobjs_tmp;
-            rawmempool_txs = {};
-            rawmempool_txouts = {};
-            rawmempool_spents = {};
-            rawmempool_addr_txouts = {};
-            rawmempool_addr_spents = {};
-            rawmempool_addr_warning = {};
+            mp_txobjs = {};
+            mp_txouts = {};
+            mp_txins = {};
+            mp_spents = {};
+            mp_txaddrs = {};
 
-            rawmempool_addr_unconfs = {};
-            for(var i in mempool) {
-                var txid = mempool[i];
-                if(rawmempool_addr_unconfs_cache[txid]) {
-                    rawmempool_addr_unconfs[txid] = rawmempool_addr_unconfs_cache[txid];
-                }
-            }
-        }
+            mp_addr_txouts = {};
+            mp_addr_spents = {};
+            mp_addr_warning = {};
 
-        for(var i in mempool) {
-            var txid = mempool[i];
-            if(rawmempool_txs[txid]) {
-                continue;
-            }
+            for(var i in mp_txids) {
+                var txid = mp_txids[i];
+                if(mp_txobjs_cache[txid]) {
+                    mp_txobjs[txid] = mp_txobjs_cache[txid];
+                    mp_txouts[txid] = mp_txouts_cache[txid];
+                    mp_txins[txid] = mp_txins_cache[txid];
+                    mp_txaddrs[txid] = mp_txaddrs_cache[txid];
 
-            var rawtx = rawmempool_rawtxs[txid];
-            if(!rawtx) {
-                var rawtx = await rpc.getRawTransaction(txid);  // Do not call multiple
-                if(!rawtx) {
-                    continue;
-                }
-                rawmempool_rawtxs[txid] = rawtx;
-            }
-        }
-
-        var stream_addrs = {};
-        var stream_addr_ins = {};
-        var stream_addr_outs = {};
-        var stream_addr_types = {};
-        var new_txids = [];
-        await Promise.all(mempool.map(async function(txid) {
-            if(rawmempool_txs[txid]) {
-                return;
-            }
-
-            var tx = rawmempool_rawtxobjs[txid];
-            if(!tx) {
-                var rawtx = rawmempool_rawtxs[txid];
-                if(!rawtx) {
-                    return;
-                }
-                tx = new bitcoin.Transaction.fromHex(rawtx);
-                rawmempool_rawtxobjs[txid] = tx;
-            }
-
-            tx.outs.map(function(output, n) {
-                var amount = output.value;
-                var out_txid_n = txid + '-' + n;
-                var txout_data = {txid: txid, n: n, value: amount};
-
-                var n_outs = {};
-                var address = null;
-                try {
-                    address = bitcoin.address.fromOutputScript(output.script, network);
-                } catch(ex) {}
-
-                if(address) {
-                    n_outs[address] = amount;
-                    pushex(rawmempool_addr_txouts, address, txout_data);
-                    if(stream_addr_outs[address]) {
-                        stream_addr_outs[address].add(amount);
-                    } else {
-                        stream_addr_outs[address] = amount;
+                    var txins = mp_txins[txid];
+                    for(var j in txins) {
+                        var txin = txins[j];
+                        var in_txid_n = txin.txid + '-' + txin.n;
+                        mp_spents[in_txid_n] = 1;
+                    }
+                    var txouts = mp_txouts[txid];
+                    for(var j in txouts) {
+                        var txout = txouts[j];
+                        var warning = txout.addresses.length > 1;
+                        for(var k in txout.addresses) {
+                            var addr = txout.addresses[k];
+                            pushex(mp_addr_txouts, addr, {txid: txout.txid, n: txout.n, value: txout.value});
+                            if(warning) {
+                                mp_addr_warning[addr] = 1;
+                            }
+                        }
+                    }
+                    var spents = mp_txins[txid];
+                    for(var j in spents) {
+                        var spent = spents[j];
+                        for(var k in spent.addresses) {
+                            var addr = spent.addresses[k];
+                            pushex(mp_addr_spents, addr, {txid: spent.txid, n: spent.n, value: spent.value});
+                        }
                     }
                 } else {
-                    var chunks;
-                    chunks = bitcoin.script.decompile(output.script);
-                    var find_addresses = [];
-                    for(var k in chunks) {
-                        var chunk = chunks[k];
-                        if(Buffer.isBuffer(chunk) && chunk.length !== 1) {
-                            address = null;
-                            try {
-                                address = bitcoin.payments.p2pkh({ pubkey: chunk, network: network }).address;
-                            } catch(ex) {}
+                    mp_new_txids.push(txid);
+                }
+            }
+        } else {
+            for(var i in mp_txids) {
+                var txid = mp_txids[i];
+                if(!mp_txobjs_cache[txid]) {
+                    mp_new_txids.push(txid);
+                }
+            }
+        }
 
-                            if(address) {
-                                n_outs[address] = amount;
-                                pushex(rawmempool_addr_txouts, address, txout_data);
-                                find_addresses.push(address);
-                            }
-                        }
-                    }
-                    if(find_addresses.length > 1) {
-                        for(var i in find_addresses) {
-                            rawmempool_addr_warning[find_addresses[i]] = 1;
-                            if(stream_addr_outs[find_addresses[i]]) {
-                                stream_addr_outs[find_addresses[i]].add(amount);
-                            } else {
-                                stream_addr_outs[find_addresses[i]] = amount;
-                            }
-                            stream_addr_types[find_addresses[i]] = 2;
-                        }
-                    } else {
-                        if(stream_addr_outs[address]) {
-                            stream_addr_outs[address].add(amount);
-                        } else {
-                            stream_addr_outs[address] = amount;
-                        }
-                    }
-                    if(!address) {
-                        address = '@' + txid + '-' + n;
-                        n_outs[address] = amount;
-                        pushex(rawmempool_addr_txouts, address, txout_data);
-                        if(stream_addr_outs[address]) {
-                            stream_addr_outs[address].add(amount);
-                        } else {
-                            stream_addr_outs[address] = amount;
-                        }
+        for(var i in mp_new_txids) {
+            var txid = mp_new_txids[i];
+            var rawtx = await rpc.getRawTransaction(txid);
+            if(rawtx) {
+                mp_txobjs[txid] = new bitcoin.Transaction.fromHex(rawtx);
+            }
+        }
+
+        for(var i in mp_new_txids) {
+            var txid = mp_new_txids[i];
+            var tx = mp_txobjs[txid];
+            for(var n in tx.outs) {
+                var output = tx.outs[n];
+                var addresses = get_script_addresses(output.script, network);
+                pushex(mp_txouts, txid, {n: n, value: output.value, addresses: addresses});
+
+                var warning = addresses.length > 1;
+                for(var i in addresses) {
+                    var addr = addresses[i];
+                    pushex(mp_addr_txouts, addr, {txid: txid, n: n, value: output.value});
+                    if(warning) {
+                        mp_addr_warning[addr] = 1;
                     }
                 }
-                rawmempool_txouts[out_txid_n] = n_outs;
-            });
+            };
+        };
 
-            await Promise.all(tx.ins.map(async function(input) {
+        for(var i in mp_new_txids) {
+            var txid = mp_new_txids[i];
+            var tx = mp_txobjs[txid];
+            for(var j in tx.ins) {
+                var input = tx.ins[j];
                 var in_txid = Buffer.from(input.hash).reverse().toString('hex');
                 var n = input.index;
-                var in_txid_n = in_txid + '-' + n;
                 if(n != 0xffffffff) {
                     var txout = await db.getTxout(in_txid, n);
                     if(txout) {
-                        rawmempool_spents[in_txid_n] = 1;
+                        pushex(mp_txins, txid, {txid: in_txid, n: n, value: txout.value, addresses: txout.addresses});
+                        var in_txid_n = in_txid + '-' + n;
+                        if(mp_spents[in_txid_n]) {
+                            console.log('\rINFO: mempool double spending ' + in_txid_n);
+                        }
+                        mp_spents[in_txid_n] = 1;
+
                         for(var i in txout.addresses) {
-                            var address = txout.addresses[i];
-                            pushex(rawmempool_addr_spents, address, {txid: in_txid, n: n, value: txout.value});
-                            if(stream_addr_ins[address]) {
-                                stream_addr_ins[address].add(txout.value);
-                            } else {
-                                stream_addr_ins[address] = txout.value;
-                            }
+                            var addr = txout.addresses[i];
+                            pushex(mp_addr_spents, addr, {txid: in_txid, n: n, value: txout.value});
                         }
                     } else {
-                        var r_spent = rawmempool_spents[in_txid_n];
-                        if(!r_spent) {
-                            var txout_value = rawmempool_txouts[in_txid_n];
-                            if(txout_value) {
-                                for(var addr in txout_value) {
-                                    pushex(rawmempool_addr_spents, addr, txout_value[addr]);
-                                    if(stream_addr_ins[address]) {
-                                        stream_addr_ins[address].add(txout_value[addr]);
-                                    } else {
-                                        stream_addr_ins[address] = txout_value[addr];
-                                    }
+                        var find_txout = false;
+                        var txouts = mp_txouts[in_txid];
+                        for(var i in txouts) {
+                            var txout = txouts[i];
+                            if(txout.n == n) {
+                                find_txout = true;
+                                pushex(mp_txins, txid, {txid: in_txid, n: n, value: txout.value, addresses: txout.addresses});
+                                var in_txid_n = in_txid + '-' + n;
+                                if(mp_spents[in_txid_n]) {
+                                    console.log('\rINFO: mempool double spending ' + in_txid_n);
+                                } else {
+                                    console.log('\rINFO: mempool spent ' + in_txid_n);
                                 }
-                                rawmempool_spents[in_txid_n] = 1;
-                                console.log('\rINFO: mempool spent=' + in_txid_n);
-                            } else {
-                                console.log('\rINFO: mempool vout not found ' + in_txid_n);
+                                mp_spents[in_txid_n] = 1;
+
+                                for(var i in txout.addresses) {
+                                    var addr = txout.addresses[i];
+                                    pushex(mp_addr_spents, addr, {txid: in_txid, n: n, value: txout.value});
+                                }
+                                break;
                             }
+                        }
+                        if(!find_txout) {
+                            console.log('\INFO: mempool vout not found ' + in_txid_n);
                         }
                     }
                 }
-            }));
+            };
+        };
 
-            rawmempool_txs[txid] = 1;
+        mp_addr_txouts_cache = Object.assign({}, mp_addr_txouts);
+        mp_addr_spents_cache = Object.assign({}, mp_addr_spents);
+        mp_addr_warning_cache = Object.assign({}, mp_addr_warning);
+
+        mp_txouts_cache = Object.assign({}, mp_txouts);
+        mp_txins_cache = Object.assign({}, mp_txins);
+        mp_txobjs_cache = Object.assign({}, mp_txobjs);
+
+        var txaddrs = [];
+        for(var i in mp_new_txids) {
+            var stream_addrs = {};
+            var stream_addr_ins = {};
+            var stream_addr_outs = {};
+            var stream_addr_types = {};
+
+            var txid = mp_new_txids[i];
+            var txins = mp_txins_cache[txid];
+            var txouts = mp_txouts_cache[txid];
+            for(var j in txins) {
+                var txin = txins[j];
+                for(var k in txin.addresses) {
+                    var addr = txin.addresses[k];
+                    addex(stream_addr_ins, addr, txin.value);
+                }
+            }
+
+            for(var j in txouts) {
+                var txout = txouts[j];
+                var warning = txout.addresses.length > 1;
+                for(var k in txout.addresses) {
+                    var addr = txout.addresses[k];
+                    addex(stream_addr_outs, addr, txout.value);
+                    if(warning) {
+                        stream_addr_types[addr] = 2;
+                    }
+                }
+            }
 
             for(var addr in stream_addr_ins) {
-                var conv_amount = conv_uint64(stream_addr_ins[addr]);
+                var conv_value = conv_uint64(stream_addr_ins[addr]);
                 if(stream_addrs[addr]) {
-                    stream_addrs[addr][0] = conv_amount;
+                    stream_addrs[addr][0] = conv_value;
                 } else {
                     var addrdata = {};
-                    addrdata[0] = conv_amount;
+                    addrdata[0] = conv_value;
                     stream_addrs[addr] = addrdata;
                 }
             }
             for(var addr in stream_addr_outs) {
-                var conv_amount = conv_uint64(stream_addr_outs[addr]);
+                var conv_value = conv_uint64(stream_addr_outs[addr]);
                 var type = stream_addr_types[addr] ? 2 : 1;
                 if(stream_addrs[addr]) {
-                    stream_addrs[addr][type] = conv_amount;
+                    stream_addrs[addr][type] = conv_value;
                 } else {
                     var addrdata = {};
-                    addrdata[type] = conv_amount;
+                    addrdata[type] = conv_value;
                     stream_addrs[addr] = addrdata;
                 }
-
             }
 
-            rawmempool_addr_unconfs[txid] = stream_addrs;
-            new_txids.push(txid);
-        }));
-
-        var tx_addrs = [];
-        for(var i in new_txids) {
-            var txid = new_txids[i];
-            tx_addrs.push({txid: txid, addrs: rawmempool_addr_unconfs[txid]});
+            txaddrs.push({txid: txid, addrs: stream_addrs});
         }
-        if(tx_addrs.length > 0) {
-            self.cb_stream_unconf({mempool: tx_addrs});
+        if(txaddrs.length > 0) {
+            self.cb_stream_unconf({mempool: txaddrs});
+            for(var i in txaddrs) {
+                var txaddr = txaddrs[i];
+                mp_txaddrs[txaddr.txid] = txaddr.addrs;
+            }
         }
+        mp_txaddrs_cache = Object.assign({}, mp_txaddrs);
+        mp_tx_unconfs = null;
 
-        rawmempool_addr_txouts_cache = Object.assign({}, rawmempool_addr_txouts);
-        rawmempool_addr_spents_cache = Object.assign({}, rawmempool_addr_spents);
-        rawmempool_addr_warning_cache = Object.assign({}, rawmempool_addr_warning);
-        rawmempool_addr_unconfs_cache = Object.assign({}, rawmempool_addr_unconfs);
-        
         if(process.stdout.clearLine) {
             process.stdout.clearLine();
-            process.stdout.write('\rmempool: count=' + Object.keys(rawmempool_txs).length);
+            process.stdout.write('\rmempool: count=' + Object.keys(mp_txids).length);
         }
 
-        update_flag = false;
+        updating = false;
     }
 }
 
