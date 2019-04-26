@@ -1,3 +1,2 @@
-# blockstor
-
-Block Explorer API service
+# Blockstor
+Block Explorer API for Wallet Service
