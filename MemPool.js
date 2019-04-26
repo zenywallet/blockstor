@@ -90,7 +90,7 @@ function MemPool(opts, libs) {
         if(addresses.length > 0) {
             return addresses;
         }
-        return ['@' + txid + '-' + n];
+        return null;
     }
 
     var updating = false;
@@ -179,6 +179,9 @@ function MemPool(opts, libs) {
             for(var n in tx.outs) {
                 var output = tx.outs[n];
                 var addresses = get_script_addresses(output.script, network);
+                if(addresses == null) {
+                    addresses = ['@' + txid + '-' + n];
+                }
                 pushex(mp_txouts, txid, {n: n, value: output.value, addresses: addresses});
 
                 var warning = addresses.length > 1;
