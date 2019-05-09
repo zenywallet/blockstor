@@ -437,30 +437,69 @@ function Db(opts) {
         });
     }
 
-    this.getAddrlogs = function(address, sequence) { // address, [sequence]
+    this.getAddrlogs = function(address, options) { // address, [options]
         return new Promise(function(resolve, reject) {
             var p_addrlog = uint8(prefix.addrlogs);
             var str_addr = str(address);
-            var start = Buffer.concat([
-                p_addrlog,
-                str_addr,
-                uint64_min,
-                uint8_min
-            ]);
-            var end = Buffer.concat([
-                p_addrlog,
-                str_addr,
-                sequence ? uint64(sequence) : uint64_max,
-                uint8_max
-            ]);
+
+            var db_options = {};
+            if(options.gte != null) {
+                db_options.gte = Buffer.concat([
+                    p_addrlog,
+                    str_addr,
+                    uint64(options.gte),
+                    uint8_min
+                ]);
+            } else if(options.gt != null) {
+                db_options.gt = Buffer.concat([
+                    p_addrlog,
+                    str_addr,
+                    uint64(options.gt),
+                    uint8_max
+                ]);
+            } else {
+                db_options.gte = Buffer.concat([
+                    p_addrlog,
+                    str_addr,
+                    uint64_min,
+                    uint8_min
+                ]);
+            }
+            if(options.lte != null) {
+                db_options.lte = Buffer.concat([
+                    p_addrlog,
+                    str_addr,
+                    uint64(options.lte),
+                    uint8_max
+                ]);
+            } else if(options.lt != null) {
+                db_options.lt = Buffer.concat([
+                    p_addrlog,
+                    str_addr,
+                    uint64(options.lt),
+                    uint8_min
+                ]);
+            } else {
+                db_options.lte = Buffer.concat([
+                    p_addrlog,
+                    str_addr,
+                    uint64_max,
+                    uint8_max
+                ]);
+            }
+            if(options.limit != null) {
+                db_options.limit = options.limit > 50000 ? 50000 : options.limit;
+            } else {
+                db_options.limit = 1000;
+            }
+            if(options.reverse != null) {
+                db_options.reverse = Boolean(options.reverse);
+            } else {
+                db_options.reverse = true;
+            }
 
             var addrlogs = [];
-            db.createReadStream({
-                gte: start,
-                lt: end,
-                reverse: true,
-                limit: 1000
-            }).on('data', function(res) {
+            db.createReadStream(db_options).on('data', function(res) {
                 var len = res.key.length;
                 addrlogs.push({
                     sequence: res.key.readUInt32BE(len - 9) * 0x100000000 + res.key.readUInt32BE(len - 5),

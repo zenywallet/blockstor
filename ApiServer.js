@@ -52,6 +52,27 @@ function ApiServer(opts, libs) {
             return val;
         }
 
+        function query_filter(query) {
+            var options = {};
+            if(query.gte != null) {
+                options.gte = parseInt(query.gte);
+            } else if(query.gt != null) {
+                options.gt = parseInt(query.gt);
+            }
+            if(query.lte != null) {
+                options.lte = parseInt(query.lte);
+            } else if(query.lt != null) {
+                options.lt = parseInt(query.lt);
+            }
+            if(query.limit != null) {
+                options.limit = parseInt(query.limit);
+            }
+            if(query.reverse != null) {
+                options.reverse = parseInt(query.reverse);
+            }
+            return options;
+        }
+
         async function get_addr(address) {
             var unconfs = mempool.unconfs(address);
             if(unconfs.txouts || unconfs.spents) {
@@ -162,8 +183,8 @@ function ApiServer(opts, libs) {
             return utxos;
         }
 
-        async function get_addrlogs(address) {
-            var addrlogs = await db.getAddrlogs(address);
+        async function get_addrlogs(address, options) {
+            var addrlogs = await db.getAddrlogs(address, options);
             for(var i in addrlogs) {
                 var addrlog = addrlogs[i];
                 addrlog.value = conv_uint64(addrlog.value);
@@ -219,7 +240,7 @@ function ApiServer(opts, libs) {
 
         // GET - /addrlog/{addr}
         router.get('/addrlog/:addr', async function(req, res) {
-            res.json({err: errval, res: await get_addrlogs(req.params.addr)});
+            res.json({err: errval, res: await get_addrlogs(req.params.addr, query_filter(req.query))});
         });
 
         // POST - {addrs: [addr1, addr2, ..., addrN]}
@@ -227,7 +248,7 @@ function ApiServer(opts, libs) {
             var addrs = req.body.addrs;
             var multilogs = [];
             for(var i in addrs) {
-                multilogs.push(await get_addrlogs(addrs[i]));
+                multilogs.push(await get_addrlogs(addrs[i], query_filter(req.query)));
             }
             res.json({err: errval, res: multilogs});
         });
