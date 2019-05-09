@@ -52,7 +52,6 @@ function ApiServer(opts, libs) {
             return val;
         }
 
-
         function utxo_query_filter(query) {
             var options = {};
             if(query.gte != null) {
