@@ -52,7 +52,7 @@ function ApiServer(opts, libs) {
             return val;
         }
 
-        function query_filter(query) {
+        function addrlog_query_filter(query) {
             var options = {};
             if(query.gte != null) {
                 options.gte = parseInt(query.gte);
@@ -240,7 +240,7 @@ function ApiServer(opts, libs) {
 
         // GET - /addrlog/{addr}
         router.get('/addrlog/:addr', async function(req, res) {
-            res.json({err: errval, res: await get_addrlogs(req.params.addr, query_filter(req.query))});
+            res.json({err: errval, res: await get_addrlogs(req.params.addr, addrlog_query_filter(req.query))});
         });
 
         // POST - {addrs: [addr1, addr2, ..., addrN]}
@@ -248,7 +248,7 @@ function ApiServer(opts, libs) {
             var addrs = req.body.addrs;
             var multilogs = [];
             for(var i in addrs) {
-                multilogs.push(await get_addrlogs(addrs[i], query_filter(req.query)));
+                multilogs.push(await get_addrlogs(addrs[i], addrlog_query_filter(req.query)));
             }
             res.json({err: errval, res: multilogs});
         });
