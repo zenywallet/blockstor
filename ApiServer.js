@@ -6,6 +6,7 @@ function ApiServer(opts, libs) {
     var db = libs.db;
     var mempool = libs.mempool;
     var marker = libs.marker;
+    var rpc = libs.rpc;
     var self = this;
     var app;
 
@@ -15,7 +16,8 @@ function ApiServer(opts, libs) {
         SYNCING: 2,
         ROLLBACKING: 3,
         ROLLBACKED: 4,
-        UNKNOWN_APIKEY: 5
+        UNKNOWN_APIKEY: 5,
+        BUSY: 6
     };
 
     this.status_code = {
@@ -304,6 +306,27 @@ function ApiServer(opts, libs) {
         // GET - /height
         router.get('/height', async function(req, res) {
             res.json({err: height == null ? 1 : 0, res: height});
+        });
+
+        // POST - {rawtx: rawtx}
+        var rawtx_sending = false;
+        router.post('/send', async function(req, res) {
+            if(rawtx_sending) {
+                res.json({err: error_code.BUSY});
+                console.log('\rWARNING: send tx busy');
+                return;
+            }
+            rawtx_sending = true;
+            var rawtx = req.body.rawtx;
+            var ret_rawtx = await rpc.sendRawTransaction(rawtx);
+            rawtx_sending = true;
+            if(ret_rawtx.code) {
+                res.json({err: error_code.ERROR, res: ret_rawtx});
+                console.log('\rERROR: sendRawTransaction code=' + ret_rawtx.code + ' message=' + ret_rawtx.message);
+            } else {
+                res.json({err: error_code.SUCCESS, res: ret_rawtx});
+                console.log('\rINFO: sendRawTransaction txid=' + ret_rawtx);
+            }
         });
 
         app.use('/api', router);
