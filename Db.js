@@ -323,33 +323,99 @@ function Db(opts) {
         });
     }
 
-    this.getUnspents = function(address) {
+    this.getUnspents = function(address, options) {
         return new Promise(function(resolve, reject) {
             var p_unspent = uint8(prefix.unspents);
             var str_addr = str(address);
-            var start = Buffer.concat([
-                p_unspent,
-                str_addr,
-                uint64_min,
-                txid_min,
-                uint32_min
-            ]);
-            var end = Buffer.concat([
-                p_unspent,
-                str_addr,
-                uint64_max,
-                txid_max,
-                uint32_max
-            ]);
+
+            var db_options = {};
+            if(options) {
+                if(options.gte != null) {
+                    db_options.gte = Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64(options.gte),
+                        txid_min,
+                        uint32_min
+                    ]);
+                } else if(options.gt != null) {
+                    db_options.gt = Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64(options.gt),
+                        txid_max,
+                        uint32_max
+                    ]);
+                } else {
+                    db_options.gte = Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64_min,
+                        txid_min,
+                        uint32_min
+                    ]);
+                }
+                if(options.lte != null) {
+                    db_options.lte = Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64(options.lte),
+                        txid_max,
+                        uint32_max
+                    ]);
+                } else if(options.lt != null) {
+                    db_options.lt = Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64(options.lt),
+                        txid_min,
+                        uint32_min
+                    ]);
+                } else {
+                    db_options.lte = Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64_max,
+                        txid_max,
+                        uint32_max
+                    ]);
+                }
+                if(options.limit != null) {
+                    db_options.limit = options.limit > 50000 ? 50000 : options.limit;
+                } else {
+                    db_options.limit = 1000;
+                }
+                if(options.reverse != null) {
+                    db_options.reverse = Boolean(options.reverse);
+                } else {
+                    db_options.reverse = false;
+                }
+            } else {
+                db_options = {
+                    gte: Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64_min,
+                        txid_min,
+                        uint32_min
+                    ]),
+                    lte: Buffer.concat([
+                        p_unspent,
+                        str_addr,
+                        uint64_max,
+                        txid_max,
+                        uint32_max
+                    ])
+                }
+            }
 
             var unspents = [];
-            db.createReadStream({
-                gte: start,
-                lte: end
-            }).on('data', function(res) {
+            db.createReadStream(db_options).on('data', function(res) {
+                var len = res.key.length;
                 unspents.push({
+                    sequence: res.key.readUInt32BE(len - 44) * 0x100000000 + res.key.readUInt32BE(len - 40),
                     txid: res.key.slice(-36, -4).toString('hex'),
-                    n: res.key.readUInt32BE(res.key.length - 4),
+                    n: res.key.readUInt32BE(len - 4),
                     value: UINT64(res.value.readUInt32BE(4), res.value.readUInt32BE(0))
                 });
             }).on('error', function(err) {

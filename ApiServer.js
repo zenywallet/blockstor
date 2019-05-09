@@ -52,6 +52,31 @@ function ApiServer(opts, libs) {
             return val;
         }
 
+
+        function utxo_query_filter(query) {
+            var options = {};
+            if(query.gte != null) {
+                options.gte = parseInt(query.gte);
+            } else if(query.gt != null) {
+                options.gt = parseInt(query.gt);
+            }
+            if(query.lte != null) {
+                options.lte = parseInt(query.lte);
+            } else if(query.lt != null) {
+                options.lt = parseInt(query.lt);
+            }
+            if(query.limit != null) {
+                options.limit = parseInt(query.limit);
+            }
+            if(query.reverse != null) {
+                options.reverse = parseInt(query.reverse);
+            }
+            if(query.unconf != null) {
+                options.unconf = parseInt(query.unconf);
+            }
+            return options;
+        }
+
         function addrlog_query_filter(query) {
             var options = {};
             if(query.gte != null) {
@@ -142,11 +167,11 @@ function ApiServer(opts, libs) {
             }
         }
 
-        async function get_utxos(address, use_unconf) {
-            var utxos = await db.getUnspents(address);
+        async function get_utxos(address, options) {
+            var utxos = await db.getUnspents(address, options);
             var unconfs = mempool.unconfs(address);
 
-            if(unconfs.txouts && use_unconf) {
+            if(unconfs.txouts && options.unconf) {
                 var txids = {};
                 for(var i in utxos) {
                     var utxo = utxos[i];
@@ -212,11 +237,7 @@ function ApiServer(opts, libs) {
 
         // GET - /utxo/{addr}
         router.get('/utxo/:addr', async function(req, res) {
-            res.json({err: errval, res: await get_utxos(req.params.addr)});
-        });
-
-        router.get('/utxo/:addr/unconf', async function(req, res) {
-            res.json({err: errval, res: await get_utxos(req.params.addr, 1)});
+            res.json({err: errval, res: await get_utxos(req.params.addr, utxo_query_filter(req.query))});
         });
 
         // POST - {addrs: [addr1, addr2, ..., addrN]}
@@ -224,16 +245,7 @@ function ApiServer(opts, libs) {
             var addrs = req.body.addrs;
             var utxos = [];
             for(var i in addrs) {
-                utxos.push(await get_utxos(addrs[i]));
-            }
-            res.json({err: errval, res: utxos});
-        });
-
-        router.post('/utxos/unconf', async function(req, res) {
-            var addrs = req.body.addrs;
-            var utxos = [];
-            for(var i in addrs) {
-                utxos.push(await get_utxos(addrs[i], 1));
+                utxos.push(await get_utxos(addrs[i], utxo_query_filter(req.query)));
             }
             res.json({err: errval, res: utxos});
         });
