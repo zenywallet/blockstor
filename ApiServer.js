@@ -319,7 +319,7 @@ function ApiServer(opts, libs) {
             rawtx_sending = true;
             var rawtx = req.body.rawtx;
             var ret_rawtx = await rpc.sendRawTransaction(rawtx);
-            rawtx_sending = true;
+            rawtx_sending = false;
             if(ret_rawtx.code) {
                 res.json({err: error_code.ERROR, res: ret_rawtx});
                 console.log('\rERROR: sendRawTransaction code=' + ret_rawtx.code + ' message=' + ret_rawtx.message);
