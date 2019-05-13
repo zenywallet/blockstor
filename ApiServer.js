@@ -371,6 +371,7 @@ function ApiServer(opts, libs) {
             } else {
                 var tx = bitcoin.Transaction.fromHex(ret_rawtx);
                 var ret_tx = {ins: [], outs: []};
+                var fee = UINT64(0);
                 for(var i in tx.ins) {
                     var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
                     var n = tx.ins[i].index;
@@ -379,10 +380,13 @@ function ApiServer(opts, libs) {
                         throw('ERROR: Txout not found ' + in_txid + ' ' + n);
                     }
                     ret_tx.ins.push({value: conv_uint64(txout.value), addrs: get_script_addresses(tx.ins[i].script, network)});
+                    fee.add(txout.value);
                 }
                 for(var i in tx.outs) {
                     ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network)});
+                    fee.subtract(tx.outs[i].value);
                 }
+                ret_tx.fee = conv_uint64(fee);
                 res.json({err: error_code.SUCCESS, res: ret_tx});
                 console.log('\rINFO: getRawTransactrion txid=' + txid);
             }
