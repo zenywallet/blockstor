@@ -383,7 +383,7 @@ function ApiServer(opts, libs) {
                     fee.add(txout.value);
                 }
                 for(var i in tx.outs) {
-                    ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network)});
+                    ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
                     fee.subtract(tx.outs[i].value);
                 }
                 ret_tx.fee = conv_uint64(fee);
