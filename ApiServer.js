@@ -378,10 +378,10 @@ function ApiServer(opts, libs) {
                     if(!txout) {
                         throw('ERROR: Txout not found ' + in_txid + ' ' + n);
                     }
-                    ret_tx.ins.push({value: conv_uint64(txout.value), addr: get_script_addresses(tx.ins[i].script, network)});
+                    ret_tx.ins.push({value: conv_uint64(txout.value), addrs: get_script_addresses(tx.ins[i].script, network)});
                 }
                 for(var i in tx.outs) {
-                    ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addr: get_script_addresses(tx.outs[i].script, network)});
+                    ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network)});
                 }
                 res.json({err: error_code.SUCCESS, res: ret_tx});
                 console.log('\rINFO: getRawTransactrion txid=' + txid);
