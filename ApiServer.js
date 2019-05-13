@@ -7,6 +7,7 @@ function ApiServer(opts, libs) {
     var mempool = libs.mempool;
     var marker = libs.marker;
     var rpc = libs.rpc;
+    var bitcoin = libs.bitcoin;
     var self = this;
     var app;
 
@@ -309,23 +310,43 @@ function ApiServer(opts, libs) {
         });
 
         // POST - {rawtx: rawtx}
-        var rawtx_sending = false;
+        var rpc_busy = false;
         router.post('/send', async function(req, res) {
-            if(rawtx_sending) {
+            if(rpc_busy) {
                 res.json({err: error_code.BUSY});
                 console.log('\rWARNING: send tx busy');
                 return;
             }
-            rawtx_sending = true;
+            rpc_busy = true;
             var rawtx = req.body.rawtx;
             var ret_rawtx = await rpc.sendRawTransaction(rawtx);
-            rawtx_sending = false;
+            rpc_busy = false;
             if(ret_rawtx.code) {
                 res.json({err: error_code.ERROR, res: ret_rawtx});
                 console.log('\rERROR: sendRawTransaction code=' + ret_rawtx.code + ' message=' + ret_rawtx.message);
             } else {
                 res.json({err: error_code.SUCCESS, res: ret_rawtx});
                 console.log('\rINFO: sendRawTransaction txid=' + ret_rawtx);
+            }
+        });
+
+        // GET - /tx/{txid}
+        router.get('/tx/:txid', async function(req, res) {
+            if(rpc_busy) {
+                res.json({err: error_code.BUSY});
+                console.log('\rWARNING: get tx busy');
+                return;
+            }
+            rpc_busy = true;
+            var txid = req.params.txid;
+            var ret_rawtx = await rpc.getRawTransaction(txid, 1);
+            rpc_busy = false;
+            if(ret_rawtx.code) {
+                res.json({err: error_code.ERROR, res: ret_rawtx});
+                console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
+            } else {
+                res.json({err: error_code.SUCCESS, res: ret_rawtx});
+                console.log('\rINFO: getRawTransactrion txid=' + txid);
             }
         });
 

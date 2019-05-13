@@ -17,7 +17,7 @@ rpc.cb = function(cmd, err, res) {
             } else if(err.code == -1 && err.message == 'Block number out of range.') {
                 return null;
             }
-        } else if(cmd == 'sendRawTransaction') {
+        } else if(cmd == 'sendRawTransaction' || cmd == 'getRawTransaction') {
             return {code: err.code, message: err.message};
         }
         console.log('\r' + err);
@@ -28,7 +28,7 @@ var db = new Db(opts);
 var network = bitcoin.networks[opts.target_network];
 var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
 var marker = new Marker(opts, {db: db});
-var apiserver = new ApiServer(opts, {db: db, mempool: mempool, marker: marker, rpc: rpc});
+var apiserver = new ApiServer(opts, {db: db, mempool: mempool, marker: marker, rpc: rpc, bitcoin: bitcoin});
 var apistream = new ApiStream(opts);
 
 var aborting = false;
