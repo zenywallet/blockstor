@@ -28,7 +28,7 @@ var db = new Db(opts);
 var network = bitcoin.networks[opts.target_network];
 var mempool = new MemPool(opts, {bitcoin: bitcoin, rpc: rpc, db: db, network: network});
 var marker = new Marker(opts, {db: db});
-var apiserver = new ApiServer(opts, {db: db, mempool: mempool, marker: marker, rpc: rpc, bitcoin: bitcoin});
+var apiserver = new ApiServer(opts, {db: db, mempool: mempool, marker: marker, rpc: rpc, bitcoin: bitcoin, network: network});
 var apistream = new ApiStream(opts);
 
 var aborting = false;

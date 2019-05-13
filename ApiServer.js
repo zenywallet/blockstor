@@ -8,6 +8,7 @@ function ApiServer(opts, libs) {
     var marker = libs.marker;
     var rpc = libs.rpc;
     var bitcoin = libs.bitcoin;
+    var network = libs.network;
     var self = this;
     var app;
 
@@ -330,6 +331,29 @@ function ApiServer(opts, libs) {
             }
         });
 
+        function get_script_addresses(script, network) {
+            try {
+                var address = bitcoin.address.fromOutputScript(script, network);
+                return [address];
+            } catch(ex) {}
+
+            var addresses = [];
+            var chunks = bitcoin.script.decompile(script);
+            for(var k in chunks) {
+                var chunk = chunks[k];
+                if(Buffer.isBuffer(chunk) && chunk.length !== 1) {
+                    try {
+                        var address = bitcoin.payments.p2pkh({ pubkey: chunk, network: network }).address;
+                        addresses.push(address);
+                    } catch(ex) {}
+                }
+            }
+            if(addresses.length > 0) {
+                return addresses;
+            }
+            return null;
+        }
+
         // GET - /tx/{txid}
         router.get('/tx/:txid', async function(req, res) {
             if(rpc_busy) {
@@ -339,13 +363,27 @@ function ApiServer(opts, libs) {
             }
             rpc_busy = true;
             var txid = req.params.txid;
-            var ret_rawtx = await rpc.getRawTransaction(txid, 1);
+            var ret_rawtx = await rpc.getRawTransaction(txid);
             rpc_busy = false;
             if(ret_rawtx.code) {
                 res.json({err: error_code.ERROR, res: ret_rawtx});
                 console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
             } else {
-                res.json({err: error_code.SUCCESS, res: ret_rawtx});
+                var tx = bitcoin.Transaction.fromHex(ret_rawtx);
+                var ret_tx = {ins: [], outs: []};
+                for(var i in tx.ins) {
+                    var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
+                    var n = tx.ins[i].index;
+                    var txout = await db.getTxout(in_txid, n);
+                    if(!txout) {
+                        throw('ERROR: Txout not found ' + in_txid + ' ' + n);
+                    }
+                    ret_tx.ins.push({value: conv_uint64(txout.value), addr: get_script_addresses(tx.ins[i].script, network)});
+                }
+                for(var i in tx.outs) {
+                    ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addr: get_script_addresses(tx.outs[i].script, network)});
+                }
+                res.json({err: error_code.SUCCESS, res: ret_tx});
                 console.log('\rINFO: getRawTransactrion txid=' + txid);
             }
         });
