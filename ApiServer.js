@@ -379,7 +379,7 @@ function ApiServer(opts, libs) {
                     if(!txout) {
                         throw('ERROR: Txout not found ' + in_txid + ' ' + n);
                     }
-                    ret_tx.ins.push({value: conv_uint64(txout.value), addrs: get_script_addresses(tx.ins[i].script, network)});
+                    ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
                     fee.add(txout.value);
                 }
                 for(var i in tx.outs) {
