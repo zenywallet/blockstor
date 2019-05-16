@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var UINT64 = require('cuint').UINT64;
+var mutexify = require('mutexify');
 
 function ApiServer(opts, libs) {
     var db = libs.db;
@@ -9,6 +10,9 @@ function ApiServer(opts, libs) {
     var rpc = libs.rpc;
     var bitcoin = libs.bitcoin;
     var network = libs.network;
+    var lock = mutexify();
+    var lock_count = 0;
+    var lock_maxcount = 5;
     var self = this;
     var app;
 
@@ -311,24 +315,28 @@ function ApiServer(opts, libs) {
         });
 
         // POST - {rawtx: rawtx}
-        var rpc_busy = false;
         router.post('/send', async function(req, res) {
-            if(rpc_busy) {
+            if(lock_count >= lock_maxcount) {
                 res.json({err: error_code.BUSY});
                 console.log('\rWARNING: send tx busy');
                 return;
             }
-            rpc_busy = true;
-            var rawtx = req.body.rawtx;
-            var ret_rawtx = await rpc.sendRawTransaction(rawtx);
-            rpc_busy = false;
-            if(ret_rawtx.code) {
-                res.json({err: error_code.ERROR, res: ret_rawtx});
-                console.log('\rERROR: sendRawTransaction code=' + ret_rawtx.code + ' message=' + ret_rawtx.message);
-            } else {
-                res.json({err: error_code.SUCCESS, res: ret_rawtx});
-                console.log('\rINFO: sendRawTransaction txid=' + ret_rawtx);
-            }
+
+            lock_count++;
+            lock(async function(release) {
+                var rawtx = req.body.rawtx;
+                var ret_rawtx = await rpc.sendRawTransaction(rawtx);
+                release(function() {
+                    lock_count--;
+                    if(ret_rawtx.code) {
+                        res.json({err: error_code.ERROR, res: ret_rawtx});
+                        console.log('\rERROR: sendRawTransaction code=' + ret_rawtx.code + ' message=' + ret_rawtx.message);
+                    } else {
+                        res.json({err: error_code.SUCCESS, res: ret_rawtx});
+                        console.log('\rINFO: sendRawTransaction txid=' + ret_rawtx);
+                    }
+                });
+            });
         });
 
         function get_script_addresses(script, network) {
@@ -356,40 +364,45 @@ function ApiServer(opts, libs) {
 
         // GET - /tx/{txid}
         router.get('/tx/:txid', async function(req, res) {
-            if(rpc_busy) {
+            if(lock_count >= lock_maxcount) {
                 res.json({err: error_code.BUSY});
                 console.log('\rWARNING: get tx busy');
                 return;
             }
-            rpc_busy = true;
-            var txid = req.params.txid;
-            var ret_rawtx = await rpc.getRawTransaction(txid);
-            rpc_busy = false;
-            if(ret_rawtx.code) {
-                res.json({err: error_code.ERROR, res: ret_rawtx});
-                console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
-            } else {
-                var tx = bitcoin.Transaction.fromHex(ret_rawtx);
-                var ret_tx = {ins: [], outs: []};
-                var fee = UINT64(0);
-                for(var i in tx.ins) {
-                    var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
-                    var n = tx.ins[i].index;
-                    var txout = await db.getTxout(in_txid, n);
-                    if(!txout) {
-                        throw('ERROR: Txout not found ' + in_txid + ' ' + n);
+
+            lock_count++;
+            lock(async function(release) {
+                var txid = req.params.txid;
+                var ret_rawtx = await rpc.getRawTransaction(txid);
+                release(async function() {
+                    lock_count--;
+                    if(ret_rawtx.code) {
+                        res.json({err: error_code.ERROR, res: ret_rawtx});
+                        console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
+                    } else {
+                        var tx = bitcoin.Transaction.fromHex(ret_rawtx);
+                        var ret_tx = {ins: [], outs: []};
+                        var fee = UINT64(0);
+                        for(var i in tx.ins) {
+                            var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
+                            var n = tx.ins[i].index;
+                            var txout = await db.getTxout(in_txid, n);
+                            if(!txout) {
+                                throw('ERROR: Txout not found ' + in_txid + ' ' + n);
+                            }
+                            ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
+                            fee.add(txout.value);
+                        }
+                        for(var i in tx.outs) {
+                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
+                            fee.subtract(tx.outs[i].value);
+                        }
+                        ret_tx.fee = conv_uint64(fee);
+                        res.json({err: error_code.SUCCESS, res: ret_tx});
+                        console.log('\rINFO: getRawTransactrion txid=' + txid);
                     }
-                    ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
-                    fee.add(txout.value);
-                }
-                for(var i in tx.outs) {
-                    ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
-                    fee.subtract(tx.outs[i].value);
-                }
-                ret_tx.fee = conv_uint64(fee);
-                res.json({err: error_code.SUCCESS, res: ret_tx});
-                console.log('\rINFO: getRawTransactrion txid=' + txid);
-            }
+                });
+            });
         });
 
         app.use('/api', router);
