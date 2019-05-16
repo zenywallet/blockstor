@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var UINT64 = require('cuint').UINT64;
 var mutexify = require('mutexify');
+var cors = require('cors');
 
 function ApiServer(opts, libs) {
     var db = libs.db;
@@ -405,6 +406,7 @@ function ApiServer(opts, libs) {
             });
         });
 
+        app.use(cors());
         app.use('/api', router);
         app.use(function(err, req, res, next) {
             res.send({err: 1, res: err.message});
