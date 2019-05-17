@@ -434,6 +434,9 @@ function Db(opts) {
                             unspents.pop();
                             last = unspents[unspents.length - 1];
                         } while(last && last.sequence == last_sequence);
+                        if(options.limit > 0 && unspents.length == 0) {
+                            console.log('\rWARNING: getUnspents limit is too small');
+                        }
                     }
                 }
                 resolve(unspents);
@@ -602,6 +605,9 @@ function Db(opts) {
                             addrlogs.pop();
                             last = addrlogs[addrlogs.length - 1];
                         } while(last && last.sequence == last_sequence);
+                        if(options.limit > 0 && addrlogs.length == 0) {
+                            console.log('\rWARNING: getAddrlogs limit is too small');
+                        }
                     }
                 }
                 resolve(addrlogs);
