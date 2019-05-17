@@ -76,6 +76,9 @@ function ApiServer(opts, libs) {
             if(query.limit != null) {
                 options.limit = parseInt(query.limit);
             }
+            if(query.seqbreak != null) {
+                options.seqbreak = parseInt(query.seqbreak);
+            }
             if(query.reverse != null) {
                 options.reverse = parseInt(query.reverse);
             }
@@ -99,6 +102,9 @@ function ApiServer(opts, libs) {
             }
             if(query.limit != null) {
                 options.limit = parseInt(query.limit);
+            }
+            if(query.seqbreak != null) {
+                options.seqbreak = parseInt(query.seqbreak);
             }
             if(query.reverse != null) {
                 options.reverse = parseInt(query.reverse);
