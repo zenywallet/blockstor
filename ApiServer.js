@@ -34,9 +34,11 @@ function ApiServer(opts, libs) {
     }
 
     var errval = self.status_code.SYNCING;
+    var status_sync = self.status_code.SYNCING;
 
     this.set_status = function(status_code) {
         errval = status_code;
+        status_sync = status_code;
     }
 
     var height = null;
@@ -411,6 +413,11 @@ function ApiServer(opts, libs) {
                     }
                 });
             });
+        });
+
+        // GET - /status
+        router.get('/status', async function(req, res) {
+            res.json({err: error_code.SUCCESS, res: {sync: status_sync}});
         });
 
         app.use(cors());
