@@ -395,7 +395,8 @@ function ApiServer(opts, libs) {
                             var n = tx.ins[i].index;
                             var txout = await db.getTxout(in_txid, n);
                             if(!txout) {
-                                throw('ERROR: Txout not found ' + in_txid + ' ' + n);
+                                console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
+                                res.json({err: errval || error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
                             }
                             ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
                             fee.add(txout.value);
@@ -405,7 +406,7 @@ function ApiServer(opts, libs) {
                             fee.subtract(tx.outs[i].value);
                         }
                         ret_tx.fee = conv_uint64(fee);
-                        res.json({err: error_code.SUCCESS, res: ret_tx});
+                        res.json({err: errval, res: ret_tx});
                         console.log('\rINFO: getRawTransactrion txid=' + txid);
                     }
                 });
