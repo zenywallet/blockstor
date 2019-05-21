@@ -318,7 +318,7 @@ function ApiServer(opts, libs) {
 
         // GET - /height
         router.get('/height', async function(req, res) {
-            res.json({err: height == null ? 1 : 0, res: height});
+            res.json({err: height == null ? error_code.ERROR : error_code.SUCCESS, res: height});
         });
 
         // POST - {rawtx: rawtx}
@@ -416,7 +416,7 @@ function ApiServer(opts, libs) {
         app.use(cors());
         app.use('/api', router);
         app.use(function(err, req, res, next) {
-            res.send({err: 1, res: err.message});
+            res.send({err: error_code.ERROR, res: err.message});
         });
 
         if(opts.server.http_port == opts.server.ws_port) {
