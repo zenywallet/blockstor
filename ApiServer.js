@@ -396,7 +396,7 @@ function ApiServer(opts, libs) {
                             var txout = await db.getTxout(in_txid, n);
                             if(!txout) {
                                 console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
-                                res.json({err: errval || error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
+                                res.json({err: error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
                             }
                             ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
                             fee.add(txout.value);
