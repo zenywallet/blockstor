@@ -383,13 +383,42 @@ function ApiServer(opts, libs) {
             lock(async function(release) {
                 var txid = req.params.txid;
                 var ret_rawtx = await rpc.getRawTransaction(txid);
+                var rawblock = null;
+                if(ret_rawtx.code) {
+                    var dbtx = await db.getTx(txid);
+                    if(dbtx) {
+                        var height = dbtx.height;
+                        var db_hash = await db.getBlockHash(height);
+                        if(opts.db.rawblocks) {
+                            rawblock = await db.getRawBlock(height, db_hash.hash);
+                        } else {
+                            rawblock = await rpc.getBlock(db_hash.hash, false);
+                        }
+                    }
+                }
                 release(async function() {
                     lock_count--;
-                    if(ret_rawtx.code) {
+                    if(ret_rawtx.code && rawblock == null) {
                         res.json({err: error_code.ERROR, res: ret_rawtx});
                         console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
                     } else {
-                        var tx = bitcoin.Transaction.fromHex(ret_rawtx);
+                        var tx = null;
+                        if(rawblock) {
+                            var block = bitcoin.Block.fromHex(rawblock);
+                            for(var i in block.transactions) {
+                                var block_tx = block.transactions[i];
+                                if(block_tx.getId() == txid) {
+                                    tx = block_tx;
+                                    break;
+                                }
+                            }
+                            if(!tx) {
+                                res.json({err: error_code.ERROR, res: ret_rawtx});
+                                console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid + ' fallback failed');
+                                return;
+                            }
+                        }
+                        tx = tx || bitcoin.Transaction.fromHex(ret_rawtx);
                         var ret_tx = {ins: [], outs: []};
                         var fee = UINT64(0);
                         for(var i in tx.ins) {
