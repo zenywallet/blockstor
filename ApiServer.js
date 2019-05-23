@@ -384,62 +384,73 @@ function ApiServer(opts, libs) {
                 var txid = req.params.txid;
                 var ret_rawtx = await rpc.getRawTransaction(txid);
                 var rawblock = null;
-                if(ret_rawtx.code) {
+                if(ret_rawtx.code && !opts.db.rawblocks) {
                     var dbtx = await db.getTx(txid);
                     if(dbtx) {
                         var height = dbtx.height;
                         var db_hash = await db.getBlockHash(height);
-                        if(opts.db.rawblocks) {
-                            rawblock = await db.getRawBlock(height, db_hash.hash);
-                        } else {
-                            rawblock = await rpc.getBlock(db_hash.hash, false);
-                        }
+                        rawblock = await rpc.getBlock(db_hash.hash, false);
                     }
                 }
                 release(async function() {
                     lock_count--;
                     if(ret_rawtx.code && rawblock == null) {
-                        res.json({err: error_code.ERROR, res: ret_rawtx});
-                        console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
-                    } else {
-                        var tx = null;
-                        if(rawblock) {
-                            var block = bitcoin.Block.fromHex(rawblock);
-                            for(var i in block.transactions) {
-                                var block_tx = block.transactions[i];
-                                if(block_tx.getId() == txid) {
-                                    tx = block_tx;
-                                    break;
-                                }
+                        if(opts.db.rawblocks) {
+                            var dbtx = await db.getTx(txid);
+                            if(dbtx) {
+                                var height = dbtx.height;
+                                var db_hash = await db.getBlockHash(height);
+                                rawblock = await db.getRawBlock(height, db_hash.hash);
                             }
-                            if(!tx) {
+                            if(!rawblock) {
                                 res.json({err: error_code.ERROR, res: ret_rawtx});
                                 console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid + ' fallback failed');
                                 return;
                             }
+                        } else {
+                            res.json({err: error_code.ERROR, res: ret_rawtx});
+                            console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid);
+                            return;
                         }
-                        tx = tx || bitcoin.Transaction.fromHex(ret_rawtx);
-                        var ret_tx = {ins: [], outs: []};
-                        var fee = UINT64(0);
-                        for(var i in tx.ins) {
-                            var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
-                            var n = tx.ins[i].index;
-                            var txout = await db.getTxout(in_txid, n);
-                            if(!txout) {
-                                console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
-                                res.json({err: error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
-                            }
-                            ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
-                            fee.add(txout.value);
-                        }
-                        for(var i in tx.outs) {
-                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
-                            fee.subtract(tx.outs[i].value);
-                        }
-                        ret_tx.fee = conv_uint64(fee);
-                        res.json({err: errval, res: ret_tx});
-                        console.log('\rINFO: getRawTransactrion txid=' + txid);
                     }
+
+                    var tx = null;
+                    if(rawblock) {
+                        var block = bitcoin.Block.fromHex(rawblock);
+                        for(var i in block.transactions) {
+                            var block_tx = block.transactions[i];
+                            if(block_tx.getId() == txid) {
+                                tx = block_tx;
+                                break;
+                            }
+                        }
+                        if(!tx) {
+                            res.json({err: error_code.ERROR, res: ret_rawtx});
+                            console.log('\rERROR: getRawTransactrion code=' + ret_rawtx.code + ' message=' + ret_rawtx.message + ' txid=' + txid + ' fallback failed');
+                            return;
+                        }
+                    }
+                    tx = tx || bitcoin.Transaction.fromHex(ret_rawtx);
+                    var ret_tx = {ins: [], outs: []};
+                    var fee = UINT64(0);
+                    for(var i in tx.ins) {
+                        var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
+                        var n = tx.ins[i].index;
+                        var txout = await db.getTxout(in_txid, n);
+                        if(!txout) {
+                            console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
+                            res.json({err: error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
+                        }
+                        ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
+                        fee.add(txout.value);
+                    }
+                    for(var i in tx.outs) {
+                        ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
+                        fee.subtract(tx.outs[i].value);
+                    }
+                    ret_tx.fee = conv_uint64(fee);
+                    res.json({err: errval, res: ret_tx});
+                    console.log('\rINFO: getRawTransactrion txid=' + txid);
                 });
             });
         });
