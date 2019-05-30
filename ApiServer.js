@@ -433,20 +433,31 @@ function ApiServer(opts, libs) {
                     tx = tx || bitcoin.Transaction.fromHex(ret_rawtx);
                     var ret_tx = {ins: [], outs: []};
                     var fee = UINT64(0);
+                    var reward = false;
                     for(var i in tx.ins) {
                         var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
                         var n = tx.ins[i].index;
-                        var txout = await db.getTxout(in_txid, n);
-                        if(!txout) {
-                            console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
-                            res.json({err: error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
+                        if(n != 0xffffffff) {
+                            var txout = await db.getTxout(in_txid, n);
+                            if(!txout) {
+                                console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
+                                res.json({err: error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
+                            }
+                            ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
+                            fee.add(txout.value);
+                        } else {
+                            reward = true;
                         }
-                        ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
-                        fee.add(txout.value);
                     }
-                    for(var i in tx.outs) {
-                        ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
-                        fee.subtract(tx.outs[i].value);
+                    if(reward) {
+                        for(var i in tx.outs) {
+                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
+                        }
+                    } else {
+                        for(var i in tx.outs) {
+                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
+                            fee.subtract(tx.outs[i].value);
+                        }
                     }
                     ret_tx.fee = conv_uint64(fee);
                     res.json({err: errval, res: ret_tx});
