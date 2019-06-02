@@ -525,62 +525,80 @@ function Db(opts) {
             var str_addr = str(address);
 
             var db_options = {};
-            if(options.gte != null) {
-                db_options.gte = Buffer.concat([
-                    p_addrlog,
-                    str_addr,
-                    uint64(options.gte),
-                    uint8_min
-                ]);
-            } else if(options.gt != null) {
-                db_options.gt = Buffer.concat([
-                    p_addrlog,
-                    str_addr,
-                    uint64(options.gt),
-                    uint8_max
-                ]);
+            if(options) {
+                if(options.gte != null) {
+                    db_options.gte = Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64(options.gte),
+                        uint8_min
+                    ]);
+                } else if(options.gt != null) {
+                    db_options.gt = Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64(options.gt),
+                        uint8_max
+                    ]);
+                } else {
+                    db_options.gte = Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64_min,
+                        uint8_min
+                    ]);
+                }
+                if(options.lte != null) {
+                    db_options.lte = Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64(options.lte),
+                        uint8_max
+                    ]);
+                } else if(options.lt != null) {
+                    db_options.lt = Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64(options.lt),
+                        uint8_min
+                    ]);
+                } else {
+                    db_options.lte = Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64_max,
+                        uint8_max
+                    ]);
+                }
+                if(options.limit != null) {
+                    db_options.limit = options.limit > 50000 ? 50000 : options.limit;
+                } else {
+                    db_options.limit = 1000;
+                }
+                if(options.seqbreak != 0) {
+                    db_options.limit++;
+                }
+                if(options.reverse != null) {
+                    db_options.reverse = Boolean(options.reverse);
+                } else {
+                    db_options.reverse = true;
+                }
             } else {
-                db_options.gte = Buffer.concat([
-                    p_addrlog,
-                    str_addr,
-                    uint64_min,
-                    uint8_min
-                ]);
-            }
-            if(options.lte != null) {
-                db_options.lte = Buffer.concat([
-                    p_addrlog,
-                    str_addr,
-                    uint64(options.lte),
-                    uint8_max
-                ]);
-            } else if(options.lt != null) {
-                db_options.lt = Buffer.concat([
-                    p_addrlog,
-                    str_addr,
-                    uint64(options.lt),
-                    uint8_min
-                ]);
-            } else {
-                db_options.lte = Buffer.concat([
-                    p_addrlog,
-                    str_addr,
-                    uint64_max,
-                    uint8_max
-                ]);
-            }
-            if(options.limit != null) {
-                db_options.limit = options.limit > 50000 ? 50000 : options.limit;
-            } else {
-                db_options.limit = 1000;
-            }
-            if(options.seqbreak != 0) {
-                db_options.limit++;
-            }
-            if(options.reverse != null) {
-                db_options.reverse = Boolean(options.reverse);
-            } else {
-                db_options.reverse = true;
+                db_options = {
+                    gte: Buffer.concat([
+                       p_addrlog,
+                        str_addr,
+                        uint64_min,
+                        uint8_min
+                    ]),
+                    lte: Buffer.concat([
+                        p_addrlog,
+                        str_addr,
+                        uint64_max,
+                        uint8_max
+                    ]),
+                    reverse: true
+                }
             }
 
             var addrlogs = [];
@@ -597,7 +615,7 @@ function Db(opts) {
             }).on('close', function() {
                 reject(null);
             }).on('end', function() {
-                if(options.seqbreak != 0) {
+                if(options && options.seqbreak != 0) {
                     var last = addrlogs[addrlogs.length - 1];
                     if(last) {
                         var last_sequence = last.sequence;
