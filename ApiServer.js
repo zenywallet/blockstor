@@ -24,7 +24,8 @@ function ApiServer(opts, libs) {
         ROLLBACKING: 3,
         ROLLBACKED: 4,
         UNKNOWN_APIKEY: 5,
-        BUSY: 6
+        BUSY: 6,
+        TOO_MANY: 7
     };
 
     this.status_code = {
@@ -464,6 +465,25 @@ function ApiServer(opts, libs) {
                     console.log('\rINFO: getRawTransactrion txid=' + txid);
                 });
             });
+        });
+
+        // GET - /search/{keyword}
+        router.get('/search/:keyword', async function(req, res) {
+            var keyword = req.params.keyword;
+            var s_addrs = await db.searchAddresses(keyword);
+            if(s_addrs === null) {
+                res.json({err: error_code.TOO_MANY});
+                return;
+            }
+            var s_txids;
+            if((keyword.match(/([0-9]|[a-f])/gim) || []).length === keyword.length) {
+                s_txids = await db.searchTxids(keyword);
+                if(s_txids === null) {
+                    res.json({err: error_code.TOO_MANY});
+                    return;
+                }
+            }
+            res.json({err: error_code.SUCCESS, res: {addrs: s_addrs || [], txids: s_txids || []}});
         });
 
         // GET - /status

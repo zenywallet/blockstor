@@ -773,6 +773,73 @@ function Db(opts) {
             });
         });
     }
+
+    var search_limit = 20 + 1;
+    this.searchAddresses = function(keyword) {
+        return new Promise(function(resolve, reject) {
+            var start = Buffer.concat([
+                uint8(prefix.addrvals),
+                str(keyword)
+            ]);
+            var end = Buffer.concat([
+                uint8(prefix.addrvals),
+                str(keyword.slice(0, -1) + String.fromCharCode(keyword.slice(-1).charCodeAt() + 1))
+            ]);
+
+            var addrs = [];
+            db.createReadStream({
+                gte: start,
+                lt: end,
+                limit: search_limit
+            }).on('data', function(res) {
+                addrs.push(res.key.slice(1).toString());
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                console.log(addrs);
+                if(addrs.length >= search_limit) {
+                    resolve(null);
+                } else {
+                    resolve(addrs);
+                }
+            });
+        });
+    }
+
+    this.searchTxids = function(keyword) {
+        return new Promise(function(resolve, reject) {
+            var pad = keyword.length % 2 ? '0' : '';
+            var start = Buffer.concat([
+                uint8(prefix.txs),
+                hex(keyword + pad)
+            ]);
+            var end = Buffer.concat([
+                uint8(prefix.txs),
+                hex(keyword.slice(0, -1) + String.fromCharCode(keyword.slice(-1).charCodeAt() + 1) + pad)
+            ]);
+
+            var txids = [];
+            db.createReadStream({
+                gte: start,
+                lt: end,
+                limit: search_limit
+            }).on('data', function(res) {
+                txids.push(res.key.slice(1).toString('hex'));
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                if(txids.length >= search_limit) {
+                    resolve(null);
+                } else {
+                    resolve(txids);
+                }
+            });
+        });
+    }
 }
 
 module.exports = Db;
