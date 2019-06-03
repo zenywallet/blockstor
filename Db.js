@@ -615,7 +615,7 @@ function Db(opts) {
             }).on('close', function() {
                 reject(null);
             }).on('end', function() {
-                if(options && options.seqbreak != 0) {
+                if(options && options.seqbreak != 0 && addrlogs.length == db_options.limit) {
                     var last = addrlogs[addrlogs.length - 1];
                     if(last) {
                         var last_sequence = last.sequence;
