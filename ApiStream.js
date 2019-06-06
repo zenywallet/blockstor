@@ -66,15 +66,17 @@ function ApiStream(opts) {
             });
         });
 
-        var heartbeat_intval = setInterval(function() {
-            wss.clients.forEach(function(ws) {
-                if(ws.isAlive === false) {
-                    return ws.terminate();
-                }
-                ws.isAlive = false;
-                ws.ping(noop);
-            });
-        }, 10000);
+        if(opts.server.ws_heartbeat == null || opts.server.ws_heartbeat != 0) {
+            var heartbeat_intval = setInterval(function() {
+                wss.clients.forEach(function(ws) {
+                    if(ws.isAlive === false) {
+                        return ws.terminate();
+                    }
+                    ws.isAlive = false;
+                    ws.ping(noop);
+                });
+            }, 10000);
+        }
 
         if(app) {
             http_server.listen(opts.server.http_port);
