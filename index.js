@@ -670,9 +670,7 @@ async function block_sync_tcp(suppress) {
             if(aborting) {
                 await abort();
             } else {
-                setTimeout(function() {
-                    worker();
-                }, 1000);
+                setTimeout(worker, 1000);
             }
         } catch(ex) {
             console.log('\r' + ex);
