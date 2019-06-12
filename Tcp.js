@@ -361,9 +361,7 @@ function Tcp(opts) {
                     }
                 }
 
-                setTimeout(function() {
-                    wait_block();
-                }, getblock_check_wait);
+                setTimeout(wait_block, getblock_check_wait);
             }
 
             wait_block();
