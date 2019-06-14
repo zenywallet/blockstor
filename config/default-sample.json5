@@ -22,7 +22,7 @@
     },
     networks: {
         bitzeny: {
-            messagePrefix: '\u0018Bitzeny Signed Message:\n',
+            messagePrefix: '\u0018BitZeny Signed Message:\n',
             bech32: 'sz',
             bip32: {
                 public: 0x0488b21e,
