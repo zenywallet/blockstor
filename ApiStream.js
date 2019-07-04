@@ -23,12 +23,32 @@ function ApiStream(opts) {
     }
 
     this.start = function(app) {
+        var ws_server_config = {};
         if(app) {
             http_server = require('http').createServer(app);
-            wss = new WebSocket.Server({server: http_server, path: "/api"});
+            ws_server_config.server = http_server;
         } else {
-            wss = new WebSocket.Server({port: opts.server.ws_port, path: "/api"});
+            ws_server_config.port = opts.server.ws_port;
         }
+        ws_server_config.path = opts.server.ws_path || '/api';
+        if(opts.server.ws_deflate) {
+            ws_server_config.perMessageDeflate = {
+                zlibDeflateOptions: {
+                    chunkSize: 1024,
+                    memLevel: 7,
+                    level: 3
+                },
+                zlibInflateOptions: {
+                    chunkSize: 10 * 1024
+                },
+                clientNoContextTakeover: true,
+                serverNoContextTakeover: true,
+                serverMaxWindowBits: 10,
+                concurrencyLimit: 10,
+                threshold: 1024
+            };
+        }
+        wss = new WebSocket.Server(ws_server_config);
 
         function get_client_count() {
             var client_count = 0;

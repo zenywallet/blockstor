@@ -14,7 +14,9 @@
     server: {
         http_port: 8000,
         ws_port: 8001,
-        ws_heartbeat: 1
+        ws_heartbeat: 1,
+        ws_path: '/api',
+        ws_deflate: 0
     },
     db: {
         rawblocks: 0,
