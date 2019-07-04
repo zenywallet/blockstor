@@ -92,7 +92,7 @@ function WebSockStream(opts) {
     }
 }
 
-var wsstream = new WebSockStream({ws_url: 'ws://localhost:8000'});
+var wsstream = new WebSockStream({ws_url: 'ws://localhost:8000/api'});
 
 wsstream.open(function() {
     console.log('connected');

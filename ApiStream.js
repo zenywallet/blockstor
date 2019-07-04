@@ -25,9 +25,9 @@ function ApiStream(opts) {
     this.start = function(app) {
         if(app) {
             http_server = require('http').createServer(app);
-            wss = new WebSocket.Server({server: http_server});
+            wss = new WebSocket.Server({server: http_server, path: "/api"});
         } else {
-            wss = new WebSocket.Server({port: opts.server.ws_port});
+            wss = new WebSocket.Server({port: opts.server.ws_port, path: "/api"});
         }
 
         function get_client_count() {
