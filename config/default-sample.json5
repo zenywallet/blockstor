@@ -13,6 +13,7 @@
     },
     server: {
         http_port: 8000,
+        http_path: '/api',
         ws_port: 8001,
         ws_heartbeat: 1,
         ws_path: '/api',

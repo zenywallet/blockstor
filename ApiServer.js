@@ -492,7 +492,7 @@ function ApiServer(opts, libs) {
         });
 
         app.use(cors());
-        app.use('/api', router);
+        app.use(opts.server.http_path || '/api', router);
         app.use(function(err, req, res, next) {
             res.send({err: error_code.ERROR, res: err.message});
         });
