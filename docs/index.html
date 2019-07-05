@@ -1,0 +1,2055 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Blockstor API Reference</title>
+
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .gh {
+  color: #999999;
+}
+.highlight .sr {
+  color: #f6aa11;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .nb {
+  color: #f6aa11;
+}
+.highlight .cm {
+  color: #75715e;
+}
+.highlight .cp {
+  color: #75715e;
+}
+.highlight .c1 {
+  color: #75715e;
+}
+.highlight .cs {
+  color: #75715e;
+}
+.highlight .c, .highlight .cd {
+  color: #75715e;
+}
+.highlight .err {
+  color: #960050;
+}
+.highlight .gr {
+  color: #960050;
+}
+.highlight .gt {
+  color: #960050;
+}
+.highlight .gd {
+  color: #49483e;
+}
+.highlight .gi {
+  color: #49483e;
+}
+.highlight .ge {
+  color: #49483e;
+}
+.highlight .kc {
+  color: #66d9ef;
+}
+.highlight .kd {
+  color: #66d9ef;
+}
+.highlight .kr {
+  color: #66d9ef;
+}
+.highlight .no {
+  color: #66d9ef;
+}
+.highlight .kt {
+  color: #66d9ef;
+}
+.highlight .mf {
+  color: #ae81ff;
+}
+.highlight .mh {
+  color: #ae81ff;
+}
+.highlight .il {
+  color: #ae81ff;
+}
+.highlight .mi {
+  color: #ae81ff;
+}
+.highlight .mo {
+  color: #ae81ff;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #ae81ff;
+}
+.highlight .sc {
+  color: #ae81ff;
+}
+.highlight .se {
+  color: #ae81ff;
+}
+.highlight .ss {
+  color: #ae81ff;
+}
+.highlight .sd {
+  color: #e6db74;
+}
+.highlight .s2 {
+  color: #e6db74;
+}
+.highlight .sb {
+  color: #e6db74;
+}
+.highlight .sh {
+  color: #e6db74;
+}
+.highlight .si {
+  color: #e6db74;
+}
+.highlight .sx {
+  color: #e6db74;
+}
+.highlight .s1 {
+  color: #e6db74;
+}
+.highlight .s {
+  color: #e6db74;
+}
+.highlight .na {
+  color: #a6e22e;
+}
+.highlight .nc {
+  color: #a6e22e;
+}
+.highlight .nd {
+  color: #a6e22e;
+}
+.highlight .ne {
+  color: #a6e22e;
+}
+.highlight .nf {
+  color: #a6e22e;
+}
+.highlight .vc {
+  color: #ffffff;
+}
+.highlight .nn {
+  color: #ffffff;
+}
+.highlight .nl {
+  color: #ffffff;
+}
+.highlight .ni {
+  color: #ffffff;
+}
+.highlight .bp {
+  color: #ffffff;
+}
+.highlight .vg {
+  color: #ffffff;
+}
+.highlight .vi {
+  color: #ffffff;
+}
+.highlight .nv {
+  color: #ffffff;
+}
+.highlight .w {
+  color: #ffffff;
+}
+.highlight {
+  color: #ffffff;
+}
+.highlight .n, .highlight .py, .highlight .nx {
+  color: #ffffff;
+}
+.highlight .ow {
+  color: #f92672;
+}
+.highlight .nt {
+  color: #f92672;
+}
+.highlight .k, .highlight .kv {
+  color: #f92672;
+}
+.highlight .kn {
+  color: #f92672;
+}
+.highlight .kp {
+  color: #f92672;
+}
+.highlight .o {
+  color: #f92672;
+}
+    </style>
+    <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" media="print" />
+      <script src="javascripts/all.js"></script>
+  </head>
+
+  <body class="index" data-languages="[&quot;javascript&quot;,&quot;nim&quot;]">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" alt="Navbar" />
+      </span>
+    </a>
+    <div class="toc-wrapper">
+      <div class="logo">Blockstor API</div>
+        <div class="lang-selector">
+              <a href="#" data-language-name="javascript">javascript</a>
+              <a href="#" data-language-name="nim">nim</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <ul id="toc" class="toc-list-h1">
+          <li>
+            <a href="#introduction" class="toc-h1 toc-link" data-title="Introduction - はじめに">Introduction - はじめに</a>
+          </li>
+          <li>
+            <a href="#features" class="toc-h1 toc-link" data-title="Features - 特徴">Features - 特徴</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#api" class="toc-h2 toc-link" data-title="高速なAPIレスポンス">高速なAPIレスポンス</a>
+                  </li>
+                  <li>
+                    <a href="#2da5782391" class="toc-h2 toc-link" data-title="容易なアルトコイン対応">容易なアルトコイン対応</a>
+                  </li>
+                  <li>
+                    <a href="#64" class="toc-h2 toc-link" data-title="コイン最大数量は64ビット">コイン最大数量は64ビット</a>
+                  </li>
+                  <li>
+                    <a href="#bd77e3b802" class="toc-h2 toc-link" data-title="効率的なデータ同期">効率的なデータ同期</a>
+                  </li>
+                  <li>
+                    <a href="#websocket" class="toc-h2 toc-link" data-title="WebSocket ストリーミング">WebSocket ストリーミング</a>
+                  </li>
+                  <li>
+                    <a href="#utxo" class="toc-h2 toc-link" data-title="UTXO数の把握">UTXO数の把握</a>
+                  </li>
+                  <li>
+                    <a href="#tcp" class="toc-h2 toc-link" data-title="TCP接続によるブロックインデックス">TCP接続によるブロックインデックス</a>
+                  </li>
+                  <li>
+                    <a href="#bitcoinjs" class="toc-h2 toc-link" data-title="BitcoinJS を利用">BitcoinJS を利用</a>
+                  </li>
+                  <li>
+                    <a href="#757ccf0290" class="toc-h2 toc-link" data-title="シンプルなコード">シンプルなコード</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#installation" class="toc-h1 toc-link" data-title="Installation - インストール">Installation - インストール</a>
+          </li>
+          <li>
+            <a href="#blockstor-config" class="toc-h1 toc-link" data-title="Blockstor Config - 設定">Blockstor Config - 設定</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#da9c3756d4" class="toc-h2 toc-link" data-title="パラメータ設定">パラメータ設定</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#blockstor-startup" class="toc-h1 toc-link" data-title="Blockstor Startup - 起動">Blockstor Startup - 起動</a>
+          </li>
+          <li>
+            <a href="#rest-api" class="toc-h1 toc-link" data-title="REST API">REST API</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#addr" class="toc-h2 toc-link" data-title="アドレス情報取得 /addr">アドレス情報取得 /addr</a>
+                  </li>
+                  <li>
+                    <a href="#addrs" class="toc-h2 toc-link" data-title="複数アドレス情報取得 /addrs">複数アドレス情報取得 /addrs</a>
+                  </li>
+                  <li>
+                    <a href="#utxo-utxo" class="toc-h2 toc-link" data-title="UTXO情報取得 /utxo">UTXO情報取得 /utxo</a>
+                  </li>
+                  <li>
+                    <a href="#utxo-utxos" class="toc-h2 toc-link" data-title="複数UTXO情報取得 /utxos">複数UTXO情報取得 /utxos</a>
+                  </li>
+                  <li>
+                    <a href="#addrlog" class="toc-h2 toc-link" data-title="アドレス取引履歴取得 /addrlog">アドレス取引履歴取得 /addrlog</a>
+                  </li>
+                  <li>
+                    <a href="#addrlogs" class="toc-h2 toc-link" data-title="複数アドレス取引履歴取得 /addrlogs">複数アドレス取引履歴取得 /addrlogs</a>
+                  </li>
+                  <li>
+                    <a href="#mempool-mempool" class="toc-h2 toc-link" data-title="mempool情報取得 /mempool">mempool情報取得 /mempool</a>
+                  </li>
+                  <li>
+                    <a href="#marker" class="toc-h2 toc-link" data-title="シーケンス位置取得 /marker">シーケンス位置取得 /marker</a>
+                  </li>
+                  <li>
+                    <a href="#marker-2" class="toc-h2 toc-link" data-title="シーケンス位置設定 /marker">シーケンス位置設定 /marker</a>
+                  </li>
+                  <li>
+                    <a href="#height" class="toc-h2 toc-link" data-title="ブロック高取得 /height">ブロック高取得 /height</a>
+                  </li>
+                  <li>
+                    <a href="#send" class="toc-h2 toc-link" data-title="トランザクション送信 /send">トランザクション送信 /send</a>
+                  </li>
+                  <li>
+                    <a href="#tx" class="toc-h2 toc-link" data-title="トランザクション情報取得 /tx">トランザクション情報取得 /tx</a>
+                  </li>
+                  <li>
+                    <a href="#search" class="toc-h2 toc-link" data-title="検索 /search">検索 /search</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#stream-api" class="toc-h1 toc-link" data-title="Stream API">Stream API</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#websocket-endpoint" class="toc-h2 toc-link" data-title="WebSocket Endpoint">WebSocket Endpoint</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#satoshi-conversion" class="toc-h1 toc-link" data-title="Satoshi Conversion - 数量変換">Satoshi Conversion - 数量変換</a>
+          </li>
+          <li>
+            <a href="#license" class="toc-h1 toc-link" data-title="License - ライセンス">License - ライセンス</a>
+          </li>
+          <li>
+            <a href="#acknowledgements" class="toc-h1 toc-link" data-title="Acknowledgements - 謝辞">Acknowledgements - 謝辞</a>
+          </li>
+      </ul>
+        <ul class="toc-footer">
+            <li><a href='https://github.com/zenywallet/blockstor'>Blockstor Source Code</a></li>
+        </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id='introduction'>Introduction - はじめに</h1>
+<p>Blockstor はウォレットサービスのバックエンド向けに設計された Block Explorer です。一般的な Block Explorer は多くの情報を保持し情報表示に関しては多機能ですが、ウォレットサービスには不要な部分が多く含まれています。 Blockstor ではウォレットサービスに不要な部分を排除し、ウォレット向けのデータ構造にすることでレスポンスを高速化しています。</p>
+
+<p>Blockstor は、Webウォレット等のクライアントから直接利用するためのAPIサービスではなく、ユーザーウォレットのアドレス等を管理するサーバー側のウォレットサービスからアクセスすることを想定して実装されています。</p>
+<h1 id='features'>Features - 特徴</h1><h3 id='api'>高速なAPIレスポンス</h3>
+<p>REST API のクエリはどんなものでもすべて高速に結果を返します。UTXOや送受信履歴は入出力の多いアドレスでも一瞬で返します。</p>
+<h3 id='2da5782391'>容易なアルトコイン対応</h3>
+<p>Bitcoin 用に設計された Block Explorer やウォレットアプリケーションをアルトコインに対応させる場合、アルトコイン用のハッシュアルゴリズム等の実装が必要であったり、改造に手間がかかることがありますが、Blockstor ではハッシュアルゴリズムの実装は不要で、パラメータ設定のみでBitcoin ベースのアルトコイン対応ができます。</p>
+<h3 id='64'>コイン最大数量は64ビット</h3>
+<p>コインの最大数量は Satoshi 単位で64ビットまでサポートしており、Bitcoin より発行枚数を増やしたアルトコインに対応できます。
+ただし、Javascript の仕様により53ビットの数値までしか扱えないので、Number.MAX_SAFE_INTEGER (9007199254740991) より大きな数値は、数値ではなく数字の文字列に変換されます。</p>
+<h3 id='bd77e3b802'>効率的なデータ同期</h3>
+<p>ウォレットサービス側でデータ読み出し位置を管理でき、データの同期を効率的にできます。
+Blockstor 内のトランザクション情報は、Genesis Block のトランザクションから順番にシーケンス番号を割り当てて管理しています。
+特定のシーケンス番号より新しい情報のみを取得するなどが可能です。
+また、Orphan Block となりブロックがロールバックした場合は、巻き戻された位置のシーケンス番号を取得することができます。
+その他、シーケンス番号は取引履歴の表示順をソートするなどのためにも利用できます。</p>
+<h3 id='websocket'>WebSocket ストリーミング</h3>
+<p>WebSocket によるストリーミングAPIでリアルタイムな情報を受信できます。
+確認済みとなったブロックのデータや未確認状態のトランザクションの情報を受信できます。
+いずれもアドレスベースに整理されており、ウォレットサービス側で必要なアドレスの情報のみをフィルタリングすることが容易にできます。</p>
+<h3 id='utxo'>UTXO数の把握</h3>
+<p>UTXOの数を簡単に取得できます。
+マイニングプール等からの受信回数が極めて多いアドレスが増えてきており、一度に送信することができなくなった状態のウォレットがたくさんあるようです。
+アドレスの入力トランザクション数の把握しユーザーに警告したり、細分化した入力トランザクションをまとめることで一括で送信できるような状態にする機能等の実現に利用できます。</p>
+<h3 id='tcp'>TCP接続によるブロックインデックス</h3>
+<p>ブロックをインデックスする際は、高速なTCP接続とRPC接続の両方をサポートしています。
+サービス起動時はTCP接続モードでブロックのインデックスを試し、接続失敗した場合はRPC接続モードにフォールバックします。
+ただし、RPC接続モードはTCP接続モードに比べると低速です。すべてのブロックを同期した後はRPC接続モードで動作します。</p>
+<h3 id='bitcoinjs'>BitcoinJS を利用</h3>
+<p>BitcoinJS を利用し、SegWit アドレスに対応しています。
+コインの数量を64ビットまで扱えるようにした BitcoinJS を利用しています。それはWebブラウザ等のクライアント側でも利用できます。</p>
+<h3 id='757ccf0290'>シンプルなコード</h3>
+<p>改造がしやすいシンプルなコードです。
+取得情報を追加することも可能です。例えばアドレス保有数量のランキングシステムなども簡単に作成できるでしょう。</p>
+<h1 id='installation'>Installation - インストール</h1>
+<p>Blockstor の実行には Node.js が必要です。nvm (Node Version Manager) を使用して Node.js をインストールすることを推奨します。</p>
+
+<p>下記のサイトの手順に従い nvm をインストールする。</p>
+
+<p><a href="https://github.com/nvm-sh/nvm">https://github.com/nvm-sh/nvm</a></p>
+
+<blockquote>
+<p>nvm のインストール</p>
+</blockquote>
+<pre class="highlight plaintext"><code>curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+</code></pre>
+<p>nvm をインストールしたら環境変数を読み込むために、一旦 Shell をログアウトして再ログインする。</p>
+
+<p>nvm を使って Node.js をインストールする。</p>
+
+<blockquote>
+<p>Node.js のインストール</p>
+</blockquote>
+<pre class="highlight plaintext"><code># インストール可能なバージョンを表示
+nvm ls-remote
+
+# Node.js バージョン v10 の最新版をインストール
+nvm install 10
+</code></pre>
+<p>下記サイトから Blockstor をインストールする。</p>
+
+<p><a href="https://github.com/zenywallet/blockstor">https://github.com/zenywallet/blockstor</a></p>
+
+<blockquote>
+<p>Blockstor のインストール</p>
+</blockquote>
+<pre class="highlight plaintext"><code>git clone https://github.com/zenywallet/blockstor.git
+cd blockstor
+npm install
+</code></pre><h1 id='blockstor-config'>Blockstor Config - 設定</h1>
+<blockquote>
+<p>デフォルト設定のコピー</p>
+</blockquote>
+<pre class="highlight plaintext"><code>cp config/default-sample.json5 config/default.json5
+
+</code></pre>
+<p>config フォルダ内の default-sample.json5 を default.json5 にコピーして、設定を編集する。</p>
+<h3 id='da9c3756d4'>パラメータ設定</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Requirements</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>rpc</td>
+<td>host</td>
+<td>required</td>
+<td>RPC接続先ホスト名</td>
+</tr>
+<tr>
+<td></td>
+<td>port</td>
+<td>required</td>
+<td>PRC接続先ポート</td>
+</tr>
+<tr>
+<td></td>
+<td>user</td>
+<td>required</td>
+<td>RPC接続先ユーザー名</td>
+</tr>
+<tr>
+<td></td>
+<td>pass</td>
+<td>required</td>
+<td>RPC接続先パスワード</td>
+</tr>
+<tr>
+<td>tcp</td>
+<td>host</td>
+<td>required</td>
+<td>TCP接続先ホスト名</td>
+</tr>
+<tr>
+<td></td>
+<td>post</td>
+<td>required</td>
+<td>TCP接続先ポート</td>
+</tr>
+<tr>
+<td></td>
+<td>protocol_version</td>
+<td>required</td>
+<td>プロトコルバージョン</td>
+</tr>
+<tr>
+<td></td>
+<td>start_string</td>
+<td>required</td>
+<td>メッセージ開始文字</td>
+</tr>
+<tr>
+<td>server</td>
+<td>http_port</td>
+<td>required</td>
+<td>httpポート番号</td>
+</tr>
+<tr>
+<td></td>
+<td>http_path</td>
+<td>optional</td>
+<td>REST APIのパス(default: &quot;/api&quot;)</td>
+</tr>
+<tr>
+<td></td>
+<td>ws_port</td>
+<td>required</td>
+<td>WebSocketポート番号</td>
+</tr>
+<tr>
+<td></td>
+<td>ws_heartbeat</td>
+<td>optional</td>
+<td>WebSocket でハートビート機能を 0 - 利用しない。1(default) - 利用する</td>
+</tr>
+<tr>
+<td></td>
+<td>ws_path</td>
+<td>optional</td>
+<td>WebSocketエンドポイントのパス(default: &quot;/api&quot;)</td>
+</tr>
+<tr>
+<td></td>
+<td>ws_deflate</td>
+<td>optional</td>
+<td>deflate を 0(default) - 無効、1 - 有効</td>
+</tr>
+<tr>
+<td>db</td>
+<td>rawblocks</td>
+<td>optional</td>
+<td>rawblock データを Blockstor で 0(default) - 保持しない。1 - 保持する</td>
+</tr>
+<tr>
+<td></td>
+<td>remove_orphan_rawblocks</td>
+<td>optional</td>
+<td>orphan となったブロックを rawblocks からを 0(default) - 取り除かない。1 - 取り除く</td>
+</tr>
+<tr>
+<td>networks</td>
+<td>&quot;coin name&quot;</td>
+<td>required</td>
+<td>BitcoinJS のネットワーク設定</td>
+</tr>
+<tr>
+<td>target_network</td>
+<td></td>
+<td>required</td>
+<td>networksで使用するコインを指定する</td>
+</tr>
+<tr>
+<td>apikeys</td>
+<td>&quot;some-api-key-value&quot;</td>
+<td>optional</td>
+<td>APIキーおよびAPIキーの説明を設定を列挙する</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>apikey 生成方法</p>
+</blockquote>
+<pre class="highlight plaintext"><code>$ uuidgen
+37e27e0a-ecdf-42fa-8f6b-60b29cf5625d
+</code></pre>
+<aside class="warning">
+ロールバックするときに orphanブロックの情報が必要になります。rawblock データを保持しない設定の場合、orphanブロックの情報を coind から取得します。接続先 coind を変更すると orphanブロックを持っていない可能性もあるため、接続先 coind は変更しないようにしてください。
+</aside>
+
+<aside class="warning">
+TCP接続はフルノードの機能を持っていないので、必ず自前で用意した coind に接続してください。
+</aside>
+
+<aside class="notice">
+http と WebSocket を一つのポート番号で動作させることもできます。その場合、http_port と ws_port に同じポート番号を設定してください。
+</aside>
+<h1 id='blockstor-startup'>Blockstor Startup - 起動</h1>
+<p>Node.js で Blockstor を起動する。</p>
+
+<blockquote>
+<p>Blockstor の起動方法</p>
+</blockquote>
+<pre class="highlight plaintext"><code>$node index.js
+2019-07-04 02:55:42 height(blockstor/coind)=0/1617610 delay=1617610 - start
+2019-07-04 02:58:36 height(blockstor/coind)=60343/1617612 delay=1557269 - 2015-01-10 07:55:14 (TCP mode)
+</code></pre>
+<p>同期中は &quot;(TCP mode)&quot; と表示されていることを確認してください。すべてのブロックを同期した後はRPC接続に切り替わり表示が &quot;(RPC mode)&quot; となります。</p>
+
+<p>synced が表示された場合、Core との同期が済んだことを意味しますが、Core自体の同期が終わっているかどうかは考慮されていません。</p>
+
+<p>接続エラー等が何らかの異常が発生した場合、積極的にプロセスを終了するように実装されています。そのため、永続的な稼働を目指す場合、シェルスクリプト等で再起動するようにしてください。</p>
+
+<blockquote>
+<p>ブロックが見つからない場合の例</p>
+</blockquote>
+<pre class="highlight plaintext"><code>$ node index.js
+2019-06-20 23:46:30 height(blockstor/coind)=1596678/1582963 delay=-13715 - start
+Error: Block not found
+ERROR: getBlock 0000000624710d3282e48c5d49e94f7e30402dc2173ab187d5c87bf107122214
+abort
+</code></pre>
+<blockquote>
+<p>TCP接続できなかった場合の例1</p>
+</blockquote>
+<pre class="highlight plaintext"><code>$ node index.js
+2019-07-04 02:55:42 height(blockstor/coind)=0/1617610 delay=1617610 - start
+2019-07-04 03:43:46 height(blockstor/coind)=62200/1617641 delay=1555441 - 2015-01-12 06:24:20 (RPC mode)
+</code></pre>
+<blockquote>
+<p>TCP接続できなかった場合の例2</p>
+</blockquote>
+<pre class="highlight plaintext"><code>$ node index.js
+2019-06-20 23:51:04 height(blockstor/coind)=1596678/1597102 delay=424 - start
+Error: connect ECONNREFUSED 127.0.0.1:9253
+ERROR: Cannot connect.
+2019-06-20 23:51:35 height(blockstor/coind)=1598990/1598990 delay=0 - synced
+2019-06-20 23:51:36 #1598991 0000000d9508b93867eab223121535c56c5901b8665f8798558de220e1dc3a8a 2019-06-14 13:51:17
+</code></pre>
+<blockquote>
+<p>ロールバックが発生した場合の例</p>
+</blockquote>
+<pre class="highlight plaintext"><code>$ node index.js
+2019-07-03 05:34:18 height(blockstor/coind)=1616696/1616758 delay=62 - start
+Error: connect ECONNREFUSED 127.0.0.1:9253
+ERROR: Cannot connect.
+2019-07-03 05:34:25 height(blockstor/coind)=1616758/1616758 delay=0 - synced
+2019-07-03 05:35:37 #1616759 00000008b1c15a3e0a26746db91d39975742c79c9ccd79a0d8073b581efad8b9 2019-07-03 05:34:31
+2019-07-03 05:36:40 #1616760 00000003b9252b45781126ff8648779978acc3fcea0949212968c08373013383 2019-07-03 05:36:12
+...
+2019-07-03 05:53:39 #1616775 00000000a693b69716228f1dcee1a3b00b944939c3e66f799f7e5c1a42af7cf2 2019-07-03 05:52:47
+2019-07-03 05:53:55 #1616776 00000007f176023c88cb58d4ecd7a7f7c97bca1519df570e8bce870acfb61c54 2019-07-03 05:53:40
+rollback height=1616776
+2019-07-03 05:55:36 #1616776 00000004e0c96cc6cace0c5025ce491c454d2f1131e4ec36e694bd13f98572e1 2019-07-03 05:53:39
+2019-07-03 05:55:36 #1616777 00000004b85268eca32c37555db1a11231d8af3cbe7ce7843eefc0cd1bcd0b94 2019-07-03 05:54:52
+...
+2019-07-03 06:04:55 #1616781 00000003df839912f6c74d908160a8d03c7b6633520f4dc349435fe37833960a 2019-07-03 06:03:59
+mempool: count=0
+</code></pre><h1 id='rest-api'>REST API</h1><h2 id='addr'>アドレス情報取得 /addr</h2>
+<p>アドレスの数量情報を取得する。</p>
+<h3 id='http-request'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/addr/{addr}</code></p>
+
+<blockquote>
+<p>アドレス情報取得のサンプル</p>
+</blockquote>
+<pre class="highlight javascript tab-javascript"><code><span class="c1">// nodejs</span>
+<span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'request'</span><span class="p">);</span>
+
+<span class="nx">request</span><span class="p">.</span><span class="nx">get</span><span class="p">({</span>
+  <span class="na">url</span><span class="p">:</span> <span class="s1">'https://blockstor.bitzeny.jp/api/addr/ZenyAddress...xyz'</span><span class="p">,</span>
+  <span class="na">json</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// javascript</span>
+<span class="kd">var</span> <span class="nx">xhr</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">();</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">onreadystatechange</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">xhr</span><span class="p">.</span><span class="nx">readyState</span> <span class="o">!=</span> <span class="mi">4</span> <span class="o">||</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">xhr</span><span class="p">.</span><span class="nx">response</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s1">' '</span><span class="p">));</span>
+<span class="p">};</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s1">'GET'</span><span class="p">,</span> <span class="s1">'https://blockstor.bitzeny.jp/api/addr/ZenyAddress...xyz'</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">responseType</span> <span class="o">=</span> <span class="s1">'json'</span><span class="p">;</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span><span class="p">();</span>
+</code></pre><pre class="highlight nim tab-nim"><code><span class="k">import</span> <span class="n">httpclient</span><span class="p">,</span> <span class="n">json</span>
+
+<span class="k">let</span> <span class="n">client</span> <span class="o">=</span> <span class="n">newHttpClient</span><span class="p">()</span>
+<span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">request</span><span class="p">(</span><span class="s">"https://blockstor.bitzeny.jp/api/addr/ZenyAddress...xyz"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">res</span><span class="p">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">"200 OK"</span><span class="p">:</span>
+  <span class="n">echo</span> <span class="n">parseJson</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">body</span><span class="p">)</span>
+</code></pre><h3 id='query-parameters'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>{addr}</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のアドレス</td>
+</tr>
+</tbody></table>
+<h3 id='headers'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response'>Response</h3>
+<blockquote>
+<p>アドレス数量情報のサンプル</p>
+</blockquote>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"err"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"res"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"balance"</span><span class="p">:</span><span class="w"> </span><span class="mi">182549587641</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"utxo_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">19</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"unconf"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"out"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"in"</span><span class="p">:</span><span class="w"> </span><span class="mi">10185033090</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>balance</td>
+<td></td>
+<td></td>
+<td>数量 (Satoshi)</td>
+</tr>
+<tr>
+<td></td>
+<td>utxo_count</td>
+<td></td>
+<td></td>
+<td>UTXO数</td>
+</tr>
+<tr>
+<td></td>
+<td>unconf</td>
+<td></td>
+<td></td>
+<td>※未確認のトランザクションがある場合のみ</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>out</td>
+<td></td>
+<td>対象アドレスから他のアドレスへ送信中の未確認数量 (Satoshi)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>in</td>
+<td></td>
+<td>他のアドレスから対象アドレスへ受信中の未確認数量 (Satoshi)</td>
+</tr>
+</tbody></table>
+<h2 id='addrs'>複数アドレス情報取得 /addrs</h2>
+<p>複数のアドレスの数量情報を取得する。</p>
+<h3 id='http-request-2'>HTTP Request</h3>
+<p><code>POST https://blockstor.bitzeny.jp/api/addrs</code></p>
+
+<blockquote>
+<p>複数アドレス情報取得のサンプル</p>
+</blockquote>
+<pre class="highlight javascript tab-javascript"><code><span class="c1">// nodejs</span>
+<span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'request'</span><span class="p">);</span>
+
+<span class="nx">request</span><span class="p">.</span><span class="nx">post</span><span class="p">({</span>
+  <span class="na">url</span><span class="p">:</span> <span class="s1">'https://blockstor.bitzeny.jp/api/addrs'</span><span class="p">,</span>
+  <span class="na">json</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="na">body</span><span class="p">:</span> <span class="p">{</span><span class="na">addrs</span><span class="p">:</span> <span class="p">[</span><span class="s1">'ZenyAddress1...xyz'</span><span class="p">,</span> <span class="s1">'ZenyAddress2...xyz'</span><span class="p">]}</span>
+<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">result</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s1">'  '</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// javascript</span>
+<span class="kd">var</span> <span class="nx">xhr</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">();</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">onreadystatechange</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">xhr</span><span class="p">.</span><span class="nx">readyState</span> <span class="o">!=</span> <span class="mi">4</span> <span class="o">||</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">xhr</span><span class="p">.</span><span class="nx">response</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s1">'  '</span><span class="p">));</span>
+<span class="p">};</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s1">'POST'</span><span class="p">,</span> <span class="s1">'https://blockstor.bitzeny.jp/api/addrs'</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="s1">'Content-Type'</span><span class="p">,</span> <span class="s1">'application/json'</span><span class="p">);</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">responseType</span> <span class="o">=</span> <span class="s1">'json'</span><span class="p">;</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="na">addrs</span><span class="p">:</span> <span class="p">[</span><span class="s1">'ZenyAddress1...xyz'</span><span class="p">,</span> <span class="s1">'ZenyAddress2...xyz'</span><span class="p">]}));</span>
+</code></pre><pre class="highlight nim tab-nim"><code><span class="k">import</span> <span class="n">httpclient</span><span class="p">,</span> <span class="n">json</span>
+
+<span class="k">let</span> <span class="n">client</span> <span class="o">=</span> <span class="n">newHttpClient</span><span class="p">()</span>
+<span class="n">client</span><span class="p">.</span><span class="n">headers</span> <span class="o">=</span> <span class="n">newHttpHeaders</span><span class="p">({</span><span class="s">"Content-Type"</span><span class="p">:</span> <span class="s">"application/json"</span><span class="p">})</span>
+<span class="k">var</span> <span class="n">postdata</span> <span class="o">=</span> <span class="o">%*</span><span class="p">{</span><span class="s">"addrs"</span><span class="p">:</span> <span class="o">[</span><span class="s">"ZenyAddress1...xyz"</span><span class="p">,</span> <span class="s">"ZenyAddress2...xyz"</span><span class="o">]</span><span class="p">}</span>
+<span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">request</span><span class="p">(</span><span class="s">"https://blockstor.bitzeny.jp/api/addrs"</span><span class="p">,</span> <span class="n">httpMethod</span> <span class="o">=</span> <span class="n">HttpPost</span><span class="p">,</span> <span class="n">body</span> <span class="o">=</span> <span class="o">$</span><span class="n">postdata</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">res</span><span class="p">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">"200 OK"</span><span class="p">:</span>
+  <span class="n">echo</span> <span class="n">parseJson</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">body</span><span class="p">).</span><span class="n">pretty</span>
+</code></pre><h3 id='request-body'>Request Body</h3>
+<p><code>{addrs: [addr1, addr2, ..., addrN]}</code></p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Field Type</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>addrs</td>
+<td>array[string]</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のアドレスを列挙する</td>
+</tr>
+</tbody></table>
+<h3 id='headers-2'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-2'>Response</h3>
+<blockquote>
+<p>複数アドレス数量情報のサンプル</p>
+</blockquote>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"err"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"res"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"balance"</span><span class="p">:</span><span class="w"> </span><span class="mi">8112500516522</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"utxo_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">2586</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"balance"</span><span class="p">:</span><span class="w"> </span><span class="mi">50730025701</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"utxo_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">665</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td></td>
+<td>[addr1の数量情報, addr2の数量情報, ..., addrNの数量情報]</td>
+</tr>
+</tbody></table>
+
+<p>※各数量情報の形式は <a href="#addr">アドレス情報取得 /addr</a> を参照</p>
+<h2 id='utxo-utxo'>UTXO情報取得 /utxo</h2>
+<p>アドレスのUTXO情報を取得する。</p>
+<h3 id='http-request-3'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/utxo/{addr}?gte=seq&amp;gt=seq&amp;lte=seq&amp;lt=seq&amp;limit=num&amp;seqbreak=flag&amp;reverse=flag&amp;unconf=flag</code></p>
+<h3 id='query-parameters-2'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>{addr}</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のアドレス</td>
+</tr>
+<tr>
+<td>gte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以上のデータを取得する (greater than or equal)</td>
+</tr>
+<tr>
+<td>gt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より大きなデータを取得する (greater than)</td>
+</tr>
+<tr>
+<td>lte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以下のデータを取得する (less than or equal)</td>
+</tr>
+<tr>
+<td>lt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より小さなデータを取得する (less than)</td>
+</tr>
+<tr>
+<td>limit</td>
+<td>optional</td>
+<td>1000</td>
+<td>取得するデータ数, 最大50000</td>
+</tr>
+<tr>
+<td>seqbreak</td>
+<td>optional</td>
+<td>1</td>
+<td>0 - 同一シーケンス番号を考慮しない, 1 - 同一シーケンス番号を分割しない</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td>optional</td>
+<td>0</td>
+<td>0 - シーケンス番号の古い順, 1 - シーケンス番号の新しい順</td>
+</tr>
+<tr>
+<td>unconf</td>
+<td>optional</td>
+<td>0</td>
+<td>0 - 未確認の受信トランザクションを含めない, 1 - 未確認の受信トランザクションを含む</td>
+</tr>
+</tbody></table>
+<h3 id='headers-3'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-3'>Response</h3>
+<blockquote>
+<p>UTXO情報のサンプル</p>
+</blockquote>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"err"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"res"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="mi">2531366</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"txid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"7e307028d20c985204ad4757a9bacee940d42720e498d12bb92722bf8fbc13ae"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"n"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">6250000000</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="mi">2552650</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"txid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"a99564f7653809844b8b7219dd41ad2c8e316608dc68cec5bfd141625464a578"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"n"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">6250000000</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="err">...</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td>[ {</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>sequence</td>
+<td>Blockstor シーケンス番号</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>txid</td>
+<td>トランザクションID</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>n</td>
+<td>トランザクションIDの格納番号</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>value</td>
+<td>数量 (Satoshi)</td>
+</tr>
+<tr>
+<td></td>
+<td>}, ... ]</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id='utxo-utxos'>複数UTXO情報取得 /utxos</h2>
+<p>複数のアドレスのUTXO情報を取得する。</p>
+<h3 id='http-request-4'>HTTP Request</h3>
+<p><code>POST https://blockstor.bitzeny.jp/api/utxos?gte=seq&amp;gt=seq&amp;lte=seq&amp;lt=seq&amp;limit=num&amp;seqbreak=flag&amp;reverse=flag&amp;unconf=flag</code></p>
+<h3 id='request-body-2'>Request Body</h3>
+<p><code>{addrs: [addr1, addr2, ..., addrN]}</code></p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Field Type</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>addrs</td>
+<td>array[string]</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のアドレスを列挙する</td>
+</tr>
+</tbody></table>
+<h3 id='query-parameters-3'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>gte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以上のデータを取得する (greater than or equal)</td>
+</tr>
+<tr>
+<td>gt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より大きなデータを取得する (greater than)</td>
+</tr>
+<tr>
+<td>lte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以下のデータを取得する (less than or equal)</td>
+</tr>
+<tr>
+<td>lt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より小さなデータを取得する (less than)</td>
+</tr>
+<tr>
+<td>limit</td>
+<td>optional</td>
+<td>1000</td>
+<td>取得するデータ数, 最大50000</td>
+</tr>
+<tr>
+<td>seqbreak</td>
+<td>optional</td>
+<td>1</td>
+<td>0 - 同一シーケンス番号を考慮しない, 1 - 同一シーケンス番号を分割しない</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td>optional</td>
+<td>0</td>
+<td>0 - シーケンス番号の古い順, 1 - シーケンス番号の新しい順</td>
+</tr>
+<tr>
+<td>unconf</td>
+<td>optional</td>
+<td>0</td>
+<td>0 - 未確認の受信トランザクションを含めない, 1 - 未確認の受信トランザクションを含む</td>
+</tr>
+</tbody></table>
+<h3 id='headers-4'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-4'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>[addr1のUTXO情報, addr2のUTXO情報, ..., addrNのUTXO情報]</td>
+</tr>
+</tbody></table>
+
+<p>※各UTXO情報の形式は <a href="#utxo-utxo">UTXO情報取得 /utxo</a> を参照</p>
+<h2 id='addrlog'>アドレス取引履歴取得 /addrlog</h2>
+<p>アドレスの取引履歴取得を取得する。</p>
+<h3 id='http-request-5'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/addrlog/{addr}?gte=seq&amp;gt=seq&amp;lte=seq&amp;lt=seq&amp;limit=num&amp;seqbreak=flag&amp;reverse=flag</code></p>
+<h3 id='query-parameters-4'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>{addr}</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のアドレス</td>
+</tr>
+<tr>
+<td>gte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以上のデータを取得する (greater than or equal)</td>
+</tr>
+<tr>
+<td>gt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より大きなデータを取得する (greater than)</td>
+</tr>
+<tr>
+<td>lte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以下のデータを取得する (less than or equal)</td>
+</tr>
+<tr>
+<td>lt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より小さなデータを取得する (less than)</td>
+</tr>
+<tr>
+<td>limit</td>
+<td>optional</td>
+<td>1000</td>
+<td>取得するデータ数, 最大50000</td>
+</tr>
+<tr>
+<td>seqbreak</td>
+<td>optional</td>
+<td>1</td>
+<td>0 - 同一シーケンス番号を考慮しない, 1 - 同一シーケンス番号を分割しない</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td>optional</td>
+<td>1</td>
+<td>0 - シーケンス番号の古い順, 1 - シーケンス番号の新しい順</td>
+</tr>
+</tbody></table>
+<h3 id='headers-5'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-5'>Response</h3>
+<blockquote>
+<p>取引履歴のサンプル</p>
+</blockquote>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"err"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"res"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="mi">3197963</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"txid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fbe61cebd32dcec39f77fe2e387983b06eda74ee0a1de39092eb70e35f0252f8"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">3125000000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1617558</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1562203790</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"sequence"</span><span class="p">:</span><span class="w"> </span><span class="mi">3197958</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"type"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"txid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"51c3ad6863639c32ec3562ad3c5c505037f086948223bb646180f9a54dcfc01c"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">12500013266</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"height"</span><span class="p">:</span><span class="w"> </span><span class="mi">1617556</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1562203551</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="err">...</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td>[ {</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>sequence</td>
+<td>Blockstor シーケンス番号</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>type</td>
+<td>送受信タイプ 0 - 送信, 1 - 受信, 2 - 受信 (受信アドレスが複数存在する場合)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>txid</td>
+<td>トランザクションID</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>value</td>
+<td>数量 (Satoshi)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>height</td>
+<td>ブロック高</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>time</td>
+<td>時間 (ブロックの時間)</td>
+</tr>
+<tr>
+<td></td>
+<td>}, ... ]</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id='addrlogs'>複数アドレス取引履歴取得 /addrlogs</h2>
+<p>複数のアドレスの取引履歴取得を取得する。</p>
+<h3 id='http-request-6'>HTTP Request</h3>
+<p><code>POST https://blockstor.bitzeny.jp/api/addrlogs?gte=seq&amp;gt=seq&amp;lte=seq&amp;lt=seq&amp;limit=num&amp;seqbreak=flag&amp;reverse=flag</code></p>
+<h3 id='request-body-3'>Request Body</h3>
+<p><code>{addrs: [addr1, addr2, ..., addrN]}</code></p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Field Type</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>addrs</td>
+<td>array[string]</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のアドレスを列挙する</td>
+</tr>
+</tbody></table>
+<h3 id='query-parameters-5'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>gte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以上のデータを取得する (greater than or equal)</td>
+</tr>
+<tr>
+<td>gt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より大きなデータを取得する (greater than)</td>
+</tr>
+<tr>
+<td>lte</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号以下のデータを取得する (less than or equal)</td>
+</tr>
+<tr>
+<td>lt</td>
+<td>optional</td>
+<td>false</td>
+<td>指定されたシーケンス番号より小さなデータを取得する (less than)</td>
+</tr>
+<tr>
+<td>limit</td>
+<td>optional</td>
+<td>1000</td>
+<td>取得するデータ数, 最大50000</td>
+</tr>
+<tr>
+<td>seqbreak</td>
+<td>optional</td>
+<td>1</td>
+<td>0 - 同一シーケンス番号を考慮しない, 1 - 同一シーケンス番号を分割しない</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td>optional</td>
+<td>1</td>
+<td>0 - シーケンス番号の古い順, 1 - シーケンス番号の新しい順</td>
+</tr>
+</tbody></table>
+<h3 id='headers-6'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-6'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>[addr1の取引履歴, addr2の取引履歴, ..., addrNの取引履歴]</td>
+</tr>
+</tbody></table>
+
+<p>※各取引履歴の形式は <a href="#addrlog">アドレス取引履歴取得 /addrlog</a> を参照</p>
+<h2 id='mempool-mempool'>mempool情報取得 /mempool</h2>
+<p>mempoolの情報を取得する。</p>
+<h3 id='http-request-7'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/mempool</code></p>
+<h3 id='headers-7'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-7'>Response</h3>
+<blockquote>
+<p>mempool情報のサンプル</p>
+</blockquote>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"err"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"res"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"txid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"e8c337bd0f97173ba14818909af4f7475e24022459b7996a0ab6293844befea2"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"addrs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"ZpwKdjyecgmE2Lbj4c2JbFB23qMiur3wE7"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"0"</span><span class="p">:</span><span class="w"> </span><span class="mi">2125765054</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="s2">"ZsuqBgGq2qLAFK5Q2C85d6iHaivZLmjQK9"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"0"</span><span class="p">:</span><span class="w"> </span><span class="mi">9375000991</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="s2">"ZpmsQZEBFE1Riwx5zRD14trjwCeu6iiALx"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"1"</span><span class="p">:</span><span class="w"> </span><span class="mi">10000261229</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="s2">"ZycSS23vKvkp1RWMm4FBsLWTg5FS9k4chc"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"1"</span><span class="p">:</span><span class="w"> </span><span class="mi">1500504133</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"txid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"d97cf8b287dce38936d45be199c93d7ea4d9316e1d5f0a8bbbdde14e3d360d2d"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"addrs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"ZgpNLbUPdbEECiZBdRJc84jinkLnbspUxy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"0"</span><span class="p">:</span><span class="w"> </span><span class="mi">268892966</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="s2">"ZxStkdMgdDMohuQk58id95gFPJqgd1k8SL"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"1"</span><span class="p">:</span><span class="w"> </span><span class="mi">74843370</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="s2">"ZgvoDe2oBeDKAxD9DkwWZqt6g75Mg6LmuY"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="s2">"1"</span><span class="p">:</span><span class="w"> </span><span class="mi">194049366</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>[トランザクション情報1, トランザクション情報2, ..., トランザクション情報N]</td>
+</tr>
+</tbody></table>
+<h3 id='1-n'>トランザクション情報1〜N</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>txid</td>
+<td></td>
+<td></td>
+<td>トランザクションID</td>
+</tr>
+<tr>
+<td>addrs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>アドレス1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>&quot;0&quot;</td>
+<td>送信数量</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>&quot;1&quot;</td>
+<td>受信数量</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>&quot;2&quot;</td>
+<td>受信数量 (受信アドレスが複数存在する場合)</td>
+</tr>
+<tr>
+<td></td>
+<td>アドレス2 ...</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>アドレスN</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+
+<p>※addrs内は、トランザクション内に存在するアドレスがキー名として列挙される。</p>
+
+<p>※送信数量、受信数量の &quot;0&quot;, &quot;1&quot;, &quot;2&quot; は値がある場合のみ存在する。</p>
+
+<p>※トランザクション内のアドレスに複数送受信がある場合は送信、受信ごとに数量がまとめられる。</p>
+<h2 id='marker'>シーケンス位置取得 /marker</h2>
+<p>シーケンスの読み出し済み位置を取得する。</p>
+<h3 id='http-request-8'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/marker/{apikey}</code></p>
+<h3 id='headers-8'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-8'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 5 - APIキーが不正</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>Blockstor シーケンス番号</td>
+</tr>
+</tbody></table>
+
+<p>※<a href="#blockstor-config">Blockstor Config - 設定</a> の apikey を設定してください。</p>
+<h2 id='marker-2'>シーケンス位置設定 /marker</h2>
+<p>シーケンスの読み出し済み位置を設定する。</p>
+<h3 id='http-request-9'>HTTP Request</h3>
+<p><code>POST https://blockstor.bitzeny.jp/api/marker</code></p>
+<h3 id='request-body-4'>Request Body</h3>
+<p><code>{apikey: apikey, sequence: sequence}</code></p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Field Type</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>apikey</td>
+<td>string</td>
+<td>required</td>
+<td>false</td>
+<td>apikey を指定する</td>
+</tr>
+<tr>
+<td>sequence</td>
+<td>number</td>
+<td>required</td>
+<td>false</td>
+<td>同期済みの Blockstor シーケンス番号を指定する</td>
+</tr>
+</tbody></table>
+<h3 id='headers-9'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-9'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 3 - ロールバック中, 4 - ロールバックが発生した, 5 - APIキーが不正</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>err が 4 の場合のみ、同期済みの Blockstor シーケンス番号</td>
+</tr>
+</tbody></table>
+
+<p>※<a href="#blockstor-config">Blockstor Config - 設定</a> の apikey を設定してください。</p>
+
+<aside class="notice">
+ロールバックが発生した場合、同期済みの Blockstor シーケンス番号はロールバックが発生した位置に変更されます。
+</aside>
+<h2 id='height'>ブロック高取得 /height</h2>
+<p>現在 Blockstor が同期済みのブロック高を取得する。</p>
+<h3 id='http-request-10'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/height</code></p>
+<h3 id='headers-10'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-10'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>現在のブロック高</td>
+</tr>
+</tbody></table>
+<h2 id='send'>トランザクション送信 /send</h2>
+<p>トランザクションを送信する。</p>
+<h3 id='http-request-11'>HTTP Request</h3>
+<p><code>POST https://blockstor.bitzeny.jp/api/send</code></p>
+<h3 id='request-body-5'>Request Body</h3>
+<p><code>{rawtx: rawtx}</code></p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Field Type</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>rawtx</td>
+<td>string</td>
+<td>required</td>
+<td>false</td>
+<td>トランザクションデータ</td>
+</tr>
+</tbody></table>
+<h3 id='headers-11'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-11'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 6 - ビジー</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>err が 0, 1 の場合、sendRawTransaction の処理結果 {code: code, message: message}</td>
+</tr>
+</tbody></table>
+<h2 id='tx'>トランザクション情報取得 /tx</h2>
+<p>トランザクションの情報を取得する。</p>
+<h3 id='http-request-12'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/tx/{txid}</code></p>
+<h3 id='query-parameters-6'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>{txid}</td>
+<td>required</td>
+<td>false</td>
+<td>情報取得対象のトランザクションID</td>
+</tr>
+</tbody></table>
+<h3 id='headers-12'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-12'>Response</h3>
+<blockquote>
+<p>トランザクション情報のサンプル</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "err": 0,
+  "res": {
+    "ins": [
+      {
+        "value": 3125000519,
+        "addrs": [
+          "Zzdn5c3mmiWXH3dDTxFDhZSkSYsozfYEGu"
+        ]
+      },
+      {
+        "value": 3125000000,
+        "addrs": [
+          "Zzdn5c3mmiWXH3dDTxFDhZSkSYsozfYEGu"
+        ]
+      }
+    ],
+    "outs": [
+      {
+        "value": 5353905454,
+        "addrs": [
+          "ZnzJjnN18N6J1KPNm3fqd8HCTWCfAysRDr"
+        ]
+      },
+      {
+        "value": 896094684,
+        "addrs": [
+          "ZxT6Zreb8zptiyiMJbqEmjBxVYDSwTvJPE"
+        ]
+      }
+    ],
+    "fee": 381
+  }
+}
+</code></pre>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 1 - 失敗, 2 - 同期中, 3 - ロールバック中, 6 - ビジー</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>err が 1 の場合、getRawTransaction の処理結果 {code: code, message: message}、6 の場合はなし、それ以外の場合は下記</td>
+</tr>
+<tr>
+<td></td>
+<td>ins</td>
+<td></td>
+<td>入力 value, addrs のリスト</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>value</td>
+<td>数量</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>addrs</td>
+<td>アドレスリスト</td>
+</tr>
+<tr>
+<td></td>
+<td>outs</td>
+<td></td>
+<td>出力 value, addrs のリスト</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>value</td>
+<td>数量</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>addrs</td>
+<td>アドレスリスト</td>
+</tr>
+<tr>
+<td></td>
+<td>fee</td>
+<td></td>
+<td>トランザクション手数料</td>
+</tr>
+</tbody></table>
+
+<aside class="notice">
+トランザクション情報取得機能を使用する場合、coind に txindex=1 を指定してください。指定しなかった場合も問題なく動作するようにフォールバックを実装していますが、ブロックからトランザクションデータを取り出すので、少しパフォーマンスが悪くなります。
+</aside>
+<h2 id='search'>検索 /search</h2>
+<p>アドレスやトランザクションを検索する。</p>
+<h3 id='http-request-13'>HTTP Request</h3>
+<p><code>GET https://blockstor.bitzeny.jp/api/search/{keyword}</code></p>
+<h3 id='query-parameters-7'>Query Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Requirements</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>{keyword}</td>
+<td>required</td>
+<td>false</td>
+<td>検索文字列</td>
+</tr>
+</tbody></table>
+<h3 id='headers-13'>Headers</h3>
+<p><code>Content-Type: application/json</code></p>
+<h3 id='response-13'>Response</h3>
+<table><thead>
+<tr>
+<th>Attribute</th>
+<th></th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>err</td>
+<td></td>
+<td></td>
+<td>0 - 成功, 7 - 検索結果が多すぎます</td>
+</tr>
+<tr>
+<td>res</td>
+<td></td>
+<td></td>
+<td>err が 7 の場合はなし、それ以外の場合は下記</td>
+</tr>
+<tr>
+<td></td>
+<td>addrs</td>
+<td></td>
+<td>アドレスリスト</td>
+</tr>
+<tr>
+<td></td>
+<td>txids</td>
+<td></td>
+<td>トランザクションIDリスト</td>
+</tr>
+</tbody></table>
+
+<aside class="notice">
+先頭文字からの部分一致で検索できます。
+</aside>
+<h1 id='stream-api'>Stream API</h1><h3 id='websocket-endpoint'>WebSocket Endpoint</h3>
+<p><code>wss://blockstor.bitzeny.jp/api/</code></p>
+
+<blockquote>
+<p>WebSocket クライアントサンプル</p>
+</blockquote>
+<pre class="highlight javascript tab-javascript"><code><span class="c1">// nodejs</span>
+<span class="kd">var</span> <span class="nx">WebSocket</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'ws'</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s1">'wss://blockstor.bitzeny.jp:443/api'</span><span class="p">);</span>
+<span class="nx">ws</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'message'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">msg</span><span class="p">),</span> <span class="kc">null</span><span class="p">,</span> <span class="s1">'  '</span><span class="p">));</span>
+<span class="p">});</span>
+
+<span class="c1">// javascript</span>
+<span class="kd">var</span> <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s1">'wss://blockstor.bitzeny.jp:443/api'</span><span class="p">);</span>
+<span class="nx">ws</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">evt</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">evt</span><span class="p">.</span><span class="nx">data</span><span class="p">),</span> <span class="kc">null</span><span class="p">,</span> <span class="s1">'  '</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre><pre class="highlight nim tab-nim"><code><span class="k">import</span> <span class="s">"websocket.nim"</span><span class="o">/</span><span class="n">websocket</span><span class="p">,</span> <span class="n">asyncdispatch</span><span class="p">,</span> <span class="n">json</span>
+
+<span class="k">let</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">waitFor</span> <span class="n">newAsyncWebsocketClient</span><span class="p">(</span><span class="s">"blockstor.bitzeny.jp"</span><span class="p">,</span> <span class="n">Port</span><span class="p">(</span><span class="mi">443</span><span class="p">),</span>
+  <span class="n">path</span> <span class="o">=</span> <span class="s">"/api"</span><span class="p">,</span> <span class="n">protocols</span> <span class="o">=</span> <span class="o">@[]</span><span class="p">,</span> <span class="n">ssl</span> <span class="o">=</span> <span class="kp">true</span><span class="p">)</span>
+
+<span class="k">proc </span><span class="nf">read</span><span class="p">()</span> <span class="p">{.</span><span class="n">async</span><span class="p">.}</span> <span class="o">=</span>
+  <span class="k">while</span> <span class="kp">true</span><span class="p">:</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">opcode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">=</span> <span class="n">await</span> <span class="n">ws</span><span class="p">.</span><span class="n">readData</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">Opcode</span><span class="p">.</span><span class="n">Text</span><span class="p">:</span>
+      <span class="n">echo</span> <span class="n">parseJson</span><span class="p">(</span><span class="n">data</span><span class="p">).</span><span class="n">pretty</span>
+
+<span class="n">asyncCheck</span> <span class="n">read</span><span class="p">()</span>
+<span class="n">runForever</span><span class="p">()</span>
+</code></pre>
+<blockquote>
+<p>ブロックデータサンプル1</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "height": 1617899,
+  "hash": "00000009a9392fd700f6b8554a4c71eff54e8c10c7df34efc1472eb39f86d22d",
+  "time": 1562235324,
+  "addrs": {
+    "ZsWVcJq4G7S1dHfQAidRiANXF9LqbGfLzp": {
+      "balance": 17728151916773,
+      "utxo_count": 5625,
+      "vals": [
+        {
+          "sequence": 3198538,
+          "type": 1,
+          "value": 3125000000
+        }
+      ]
+    }
+  },
+  "txs": {
+    "3198538": "b4ae9575f67431ae88510991497f2e38fbe1ac815a54e8439f513c3f979331ae"
+  }
+}
+</code></pre>
+<blockquote>
+<p>ブロックデータサンプル2</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "height": 1617911,
+  "hash": "0000000339b3824c29c420da9fca5c133b7fda24224805d6b6a94a29df0b1b70",
+  "time": 1562236016,
+  "addrs": {
+    "ZpgUq4hVqe8y4wrCUcKTwS97jt9sK9XXkw": {
+      "balance": 123750178263,
+      "utxo_count": 40,
+      "vals": [
+        {
+          "sequence": 3198552,
+          "type": 1,
+          "value": 3093750228
+        }
+      ]
+    },
+    "ZdzzJGbxRLSiim9cWvVHetJVxzPW72n6eP": {
+      "balance": 4437532773,
+      "utxo_count": 142,
+      "vals": [
+        {
+          "sequence": 3198552,
+          "type": 1,
+          "value": 31250002
+        }
+      ]
+    },
+    "ZcanDiZt7uxjsCrPXvN18qbUKanNBFUwey": {
+      "balance": 423450288802,
+      "utxo_count": 1,
+      "vals": [
+        {
+          "sequence": 3198553,
+          "type": 1,
+          "value": 423450288802
+        }
+      ]
+    },
+    "ZqXuAvdoacwhDd9JaWvj9AYiPXLMQyqQgj": {
+      "balance": 2182066255,
+      "utxo_count": 512,
+      "vals": [
+        {
+          "sequence": 3198553,
+          "type": 1,
+          "value": 3000000
+        }
+      ]
+    },
+    "Zd3vfCHzr5pUajEwkNy2jGeenJ1k1wBLXD": {
+      "balance": 0,
+      "utxo_count": 0,
+      "vals": [
+        {
+          "sequence": 3198553,
+          "type": 0,
+          "value": 423453289032
+        }
+      ]
+    }
+  },
+  "txs": {
+    "3198552": "8d6037071c6d137856f39bbc806e07f6233978a9c94bbcad998b536684ae978a",
+    "3198553": "cb5e8476e4a3f7523a4a6c76f0ba79ba5cf508f2b4f429ecc56712f011c040eb"
+  }
+}
+</code></pre>
+<blockquote>
+<p>mempoolデータサンプル</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "mempool": [
+    {
+      "txid": "cb5e8476e4a3f7523a4a6c76f0ba79ba5cf508f2b4f429ecc56712f011c040eb",
+      "addrs": {
+        "Zd3vfCHzr5pUajEwkNy2jGeenJ1k1wBLXD": {
+          "0": 423453289032
+        },
+        "ZcanDiZt7uxjsCrPXvN18qbUKanNBFUwey": {
+          "1": 423450288802
+        },
+        "ZqXuAvdoacwhDd9JaWvj9AYiPXLMQyqQgj": {
+          "1": 3000000
+        }
+      }
+    }
+  ]
+}
+</code></pre><h1 id='satoshi-conversion'>Satoshi Conversion - 数量変換</h1>
+<p>Blockstor が扱う数量の単位はすべて Satoshi である。
+コイン数量に変換するには、1 / 100000000 倍する必要がある。javascript と nim の変換関数をここに書いておくが、これより美しいコードが書けると思う。</p>
+
+<blockquote>
+<p>Satoshi からコイン数量に変換する関数</p>
+</blockquote>
+<pre class="highlight javascript tab-javascript"><code><span class="kd">function</span> <span class="nx">conv_coin</span><span class="p">(</span><span class="nx">uint64_val</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">strval</span> <span class="o">=</span> <span class="nx">uint64_val</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+    <span class="nx">val</span> <span class="o">=</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">strval</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">val</span> <span class="o">&gt;</span> <span class="nb">Number</span><span class="p">.</span><span class="nx">MAX_SAFE_INTEGER</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="nx">strval</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/0+$/</span><span class="p">,</span> <span class="s1">''</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">n</span> <span class="o">=</span> <span class="nx">strval</span><span class="p">.</span><span class="nx">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">strval</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">8</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="nx">d</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">n</span> <span class="o">+</span> <span class="s1">'.'</span> <span class="o">+</span> <span class="nx">d</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">n</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">val</span> <span class="o">/</span> <span class="mi">100000000</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre><pre class="highlight nim tab-nim"><code><span class="k">import</span> <span class="n">strutils</span>
+
+<span class="k">proc </span><span class="nf">convertCoin</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="kt">string</span><span class="p">):</span> <span class="kt">string</span> <span class="o">=</span>
+  <span class="k">if</span> <span class="n">val</span><span class="p">.</span><span class="n">len</span> <span class="o">&gt;</span> <span class="mi">8</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">val</span><span class="o">[</span><span class="mf">0</span><span class="p">..^</span><span class="mi">9</span><span class="o">]</span> <span class="o">&amp;</span> <span class="s">"."</span> <span class="o">&amp;</span> <span class="n">val</span><span class="o">[</span><span class="p">^</span><span class="mf">8</span><span class="p">..^</span><span class="mi">1</span><span class="o">]</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">parseFloat</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100000000</span><span class="p">).</span><span class="n">formatFloat</span><span class="p">(</span><span class="n">ffDecimal</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+  <span class="n">result</span><span class="p">.</span><span class="n">trimZeros</span><span class="p">()</span>
+
+<span class="k">let</span> <span class="n">json</span> <span class="o">=</span> <span class="n">parseJson</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">body</span><span class="p">)</span>
+<span class="n">echo</span> <span class="n">convertCoin</span><span class="p">(</span><span class="o">$</span><span class="n">json</span><span class="o">[</span><span class="s">"res"</span><span class="o">][</span><span class="s">"balance"</span><span class="o">]</span><span class="p">)</span>
+</code></pre><h1 id='license'>License - ライセンス</h1>
+<p>MIT License</p>
+
+<p><a href="https://github.com/zenywallet/blockstor/blob/master/LICENSE">https://github.com/zenywallet/blockstor/blob/master/LICENSE</a></p>
+<h1 id='acknowledgements'>Acknowledgements - 謝辞</h1>
+<p>Blockstor は BitZeny 関連サービス開発の有志により、<a href="https://bitzeny.info/">BitZenyフォーラム</a> (<a href="https://bitzeny.info/">https://bitzeny.info/</a>) で開発がスタートしました。
+BitZeny コミュニティの様々な人たちの活動に感謝するとともに、国産の仮想通貨の発展に貢献できればと考えています。</p>
+
+<p><a href="https://twitter.com/zenywallet">@zenywallet</a></p>
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="javascript">javascript</a>
+                <a href="#" data-language-name="nim">nim</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>
