@@ -651,7 +651,7 @@ mempool: count=0
 
 <span class="k">let</span> <span class="n">client</span> <span class="o">=</span> <span class="n">newHttpClient</span><span class="p">()</span>
 <span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">request</span><span class="p">(</span><span class="s">"https://blockstor.bitzeny.jp/api/addr/ZenyAddress...xyz"</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">res</span><span class="p">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">"200 OK"</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">res</span><span class="p">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">Http200</span><span class="p">:</span>
   <span class="n">echo</span> <span class="n">parseJson</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">body</span><span class="p">)</span>
 </code></pre><h3 id='query-parameters'>Query Parameters</h3>
 <table><thead>
@@ -783,7 +783,7 @@ mempool: count=0
 <span class="n">client</span><span class="p">.</span><span class="n">headers</span> <span class="o">=</span> <span class="n">newHttpHeaders</span><span class="p">({</span><span class="s">"Content-Type"</span><span class="p">:</span> <span class="s">"application/json"</span><span class="p">})</span>
 <span class="k">var</span> <span class="n">postdata</span> <span class="o">=</span> <span class="o">%*</span><span class="p">{</span><span class="s">"addrs"</span><span class="p">:</span> <span class="o">[</span><span class="s">"ZenyAddress1...xyz"</span><span class="p">,</span> <span class="s">"ZenyAddress2...xyz"</span><span class="o">]</span><span class="p">}</span>
 <span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">request</span><span class="p">(</span><span class="s">"https://blockstor.bitzeny.jp/api/addrs"</span><span class="p">,</span> <span class="n">httpMethod</span> <span class="o">=</span> <span class="n">HttpPost</span><span class="p">,</span> <span class="n">body</span> <span class="o">=</span> <span class="o">$</span><span class="n">postdata</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">res</span><span class="p">.</span><span class="n">status</span> <span class="o">==</span> <span class="s">"200 OK"</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">res</span><span class="p">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">Http200</span><span class="p">:</span>
   <span class="n">echo</span> <span class="n">parseJson</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">body</span><span class="p">).</span><span class="n">pretty</span>
 </code></pre><h3 id='request-body'>Request Body</h3>
 <p><code>{addrs: [addr1, addr2, ..., addrN]}</code></p>
