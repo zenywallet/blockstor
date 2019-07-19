@@ -25,7 +25,8 @@ function ApiServer(opts, libs) {
         ROLLBACKED: 4,
         UNKNOWN_APIKEY: 5,
         BUSY: 6,
-        TOO_MANY: 7
+        TOO_MANY: 7,
+        TOO_HIGH: 8
     };
 
     this.status_code = {
@@ -46,6 +47,12 @@ function ApiServer(opts, libs) {
 
     this.set_height = function(true_height) {
         height = true_height;
+    }
+
+    var tx_sequence = 0;
+
+    this.set_tx_sequence = function(true_tx_sequence) {
+        tx_sequence = true_tx_sequence;
     }
 
     this.start = function() {
@@ -305,7 +312,15 @@ function ApiServer(opts, libs) {
             if(opts.apikeys[apikey]) {
                 if(!marker.rollbacking) {
                     var check_marker = await db.getMarker(apikey);
-                    if(!check_marker.rollback || check_marker.sequence == sequence) {
+                    if(!check_marker.rollback) {
+                        if(sequence > tx_sequence) {
+                            await db.setMarker(apikey, sequence, 0);
+                            res.json({err: error_code.TOO_HIGH, res: tx_sequence});
+                        } else {
+                            await db.setMarker(apikey, sequence, 0);
+                            res.json({err: error_code.SUCCESS});
+                        }
+                    } else if(check_marker.sequence == sequence) {
                         await db.setMarker(apikey, sequence, 0);
                         res.json({err: error_code.SUCCESS});
                     } else {

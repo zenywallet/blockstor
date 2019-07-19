@@ -212,6 +212,7 @@ async function txs_parser(block, txs_cb, txins_cb, txouts_cb, addrins_cb, addrou
         }
     }
     tx_sequence += block.transactions.length;
+    apiserver.set_tx_sequence(tx_sequence);
 }
 
 async function txs_rollback_parser(block, txs_cb, txins_cb, txouts_cb, addrins_cb, addrouts_cb) {
@@ -220,6 +221,7 @@ async function txs_rollback_parser(block, txs_cb, txins_cb, txouts_cb, addrins_c
     var addrins = [];
     var addrouts = [];
     tx_sequence -= block.transactions.length;
+    apiserver.set_tx_sequence(tx_sequence);
     await Promise.all(block.transactions.map(async function(tx, i) {
         var txid = tx.getId();
         txids[i] = txid;
@@ -545,6 +547,7 @@ async function lastblock_rewrite() {
         var rawblock = await get_rawblock(last, db_hash.hash);
         var block = bitcoin.Block.fromHex(rawblock);
         tx_sequence = db_hash.sequence;
+        apiserver.set_tx_sequence(tx_sequence);
         await block_rewriter(block, db_hash.hash, block.timestamp, rawblock);
     }
 }
