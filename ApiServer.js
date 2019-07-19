@@ -88,7 +88,7 @@ function ApiServer(opts, libs) {
             if(query.unconf != null) {
                 options.unconf = parseInt(query.unconf);
             }
-            return options;
+            return Object.keys(options).length > 0 ? options : null;
         }
 
         function addrlog_query_filter(query) {
@@ -112,7 +112,7 @@ function ApiServer(opts, libs) {
             if(query.reverse != null) {
                 options.reverse = parseInt(query.reverse);
             }
-            return options;
+            return Object.keys(options).length > 0 ? options : null;
         }
 
         async function get_addr(address) {
