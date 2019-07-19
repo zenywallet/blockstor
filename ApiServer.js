@@ -80,8 +80,16 @@ function ApiServer(opts, libs) {
             }
             if(query.lte != null) {
                 options.lte = parseInt(query.lte);
+                if(options.lte > tx_sequence) {
+                    options.lte = tx_sequence;
+                }
             } else if(query.lt != null) {
                 options.lt = parseInt(query.lt);
+                if(options.lt > tx_sequence + 1) {
+                    options.lt = tx_sequence + 1;
+                }
+            } else {
+                options.lte = tx_sequence;
             }
             if(query.limit != null) {
                 options.limit = parseInt(query.limit);
@@ -107,8 +115,16 @@ function ApiServer(opts, libs) {
             }
             if(query.lte != null) {
                 options.lte = parseInt(query.lte);
+                if(options.lte > tx_sequence) {
+                    options.lte = tx_sequence;
+                }
             } else if(query.lt != null) {
                 options.lt = parseInt(query.lt);
+                if(options.lt > tx_sequence + 1) {
+                    options.lt = tx_sequence + 1;
+                }
+            } else {
+                options.lte = tx_sequence;
             }
             if(query.limit != null) {
                 options.limit = parseInt(query.limit);
