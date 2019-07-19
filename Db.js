@@ -426,7 +426,7 @@ function Db(opts) {
             }).on('close', function() {
                 reject(null);
             }).on('end', function() {
-                if(options && options.seqbreak != 0) {
+                if(options && options.seqbreak != 0 && unspents.length == db_options.limit) {
                     var last = unspents[unspents.length - 1];
                     if(last) {
                         var last_sequence = last.sequence;
