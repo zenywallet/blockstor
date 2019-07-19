@@ -314,8 +314,8 @@ function ApiServer(opts, libs) {
         router.get('/marker/:apikey', async function(req, res) {
             var apikey = req.params.apikey;
             if(opts.apikeys[apikey]) {
-                var sequence = await db.getMarker(apikey) || 0;
-                res.json({err: error_code.SUCCESS, res: sequence});
+                var marker = await db.getMarker(apikey) || {sequence: 0};
+                res.json({err: error_code.SUCCESS, res: marker.sequence});
             } else {
                 res.json({err: error_code.UNKNOWN_APIKEY});
             }
@@ -328,7 +328,7 @@ function ApiServer(opts, libs) {
             if(opts.apikeys[apikey]) {
                 if(!marker.rollbacking) {
                     var check_marker = await db.getMarker(apikey);
-                    if(!check_marker.rollback) {
+                    if(check_marker != null && !check_marker.rollback) {
                         if(sequence > tx_sequence) {
                             await db.setMarker(apikey, sequence, 0);
                             res.json({err: error_code.TOO_HIGH, res: tx_sequence});
@@ -336,7 +336,7 @@ function ApiServer(opts, libs) {
                             await db.setMarker(apikey, sequence, 0);
                             res.json({err: error_code.SUCCESS});
                         }
-                    } else if(check_marker.sequence == sequence) {
+                    } else if(check_marker == null || check_marker.sequence == sequence) {
                         await db.setMarker(apikey, sequence, 0);
                         res.json({err: error_code.SUCCESS});
                     } else {
