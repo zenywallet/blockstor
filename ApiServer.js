@@ -315,7 +315,13 @@ function ApiServer(opts, libs) {
             var apikey = req.params.apikey;
             if(opts.apikeys[apikey]) {
                 var marker = await db.getMarker(apikey) || {sequence: 0};
-                res.json({err: error_code.SUCCESS, res: marker.sequence});
+                if(marker.rollbacking) {
+                    res.json({err: error_code.ROLLBACKING, res: marker.sequence});
+                } else if(marker.rollback) {
+                    res.json({err: error_code.ROLLBACKED, res: marker.sequence});
+                } else {
+                    res.json({err: error_code.SUCCESS, res: marker.sequence});
+                }
             } else {
                 res.json({err: error_code.UNKNOWN_APIKEY});
             }
