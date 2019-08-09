@@ -792,8 +792,7 @@ function Db(opts) {
         });
     }
 
-    var search_limit = 20 + 1;
-    this.searchAddresses = function(keyword) {
+    this.searchAddrs = function(keyword, limit) {
         return new Promise(function(resolve, reject) {
             var start = Buffer.concat([
                 uint8(prefix.addrvals),
@@ -803,13 +802,15 @@ function Db(opts) {
                 uint8(prefix.addrvals),
                 str(keyword.slice(0, -1) + String.fromCharCode(keyword.slice(-1).charCodeAt() + 1))
             ]);
-
-            var addrs = [];
-            db.createReadStream({
+            var options = {
                 gte: start,
-                lt: end,
-                limit: search_limit
-            }).on('data', function(res) {
+                lt: end
+            }
+            if(limit) {
+                options.limit = limit;
+            }
+            var addrs = [];
+            db.createReadStream(options).on('data', function(res) {
                 addrs.push(res.key.slice(1).toString());
             }).on('error', function(err) {
                 reject(err);
@@ -817,13 +818,18 @@ function Db(opts) {
                 reject(null);
             }).on('end', function() {
                 console.log(addrs);
-                if(addrs.length >= search_limit) {
+                if(limit && addrs.length >= search_limit) {
                     resolve(null);
                 } else {
                     resolve(addrs);
                 }
             });
         });
+    }
+
+    var search_limit = 20 + 1;
+    this.searchAddresses = function(keyword) {
+        return self.searchAddrs(keyword, search_limit);
     }
 
     this.searchTxids = function(keyword) {
