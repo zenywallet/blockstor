@@ -161,6 +161,24 @@ function ApiServer(opts, libs) {
             return address;
         }
 
+        function bech32_address_prefix(address, network) {
+            var decode = null;
+            try {
+                decode = bitcoin.address.fromBech32(address);
+            } catch(e) {}
+            if(decode) {
+                if(decode.version === 0) {
+                    if(decode.data.length === 20) {
+                        return bitcoin.payments.p2wpkh({hash: decode.data, network: network}).address;
+                    }
+                    if(decode.data.length === 32) {
+                        return bitcoin.payments.p2wsh({hash: decode.data, network: network}).address;
+                    }
+                }
+            }
+            return address;
+        }
+
         async function get_addr(address) {
             address = bech32_address_filter(address);
             var unconfs = mempool.unconfs(address);
@@ -498,6 +516,15 @@ function ApiServer(opts, libs) {
                     var ret_tx = {ins: [], outs: []};
                     var fee = UINT64(0);
                     var reward = false;
+                    var target_network;
+                    var bech32_flag = false;
+                    if(req.query.bech32 && req.query.bech32.length <= 90 && /^[\x21-\x7e]+$/.test(req.query.bech32)) {
+                        target_network = JSON.parse(JSON.stringify(network));
+                        target_network.bech32 = req.query.bech32;
+                        bech32_flag = true;
+                    } else {
+                        target_network = network;
+                    }
                     for(var i in tx.ins) {
                         var in_txid = Buffer.from(tx.ins[i].hash).reverse().toString('hex');
                         var n = tx.ins[i].index;
@@ -507,6 +534,11 @@ function ApiServer(opts, libs) {
                                 console.log('\rERROR: Txout not found ' + in_txid + ' ' + n);
                                 res.json({err: error_code.ERROR, res: 'Txout not found ' + in_txid + ' ' + n});
                             }
+                            if(bech32_flag) {
+                                for(var i in txout.addresses) {
+                                    txout.addresses[i] = bech32_address_prefix(txout.addresses[i], target_network);
+                                }
+                            }
                             ret_tx.ins.push({value: conv_uint64(txout.value), addrs: txout.addresses});
                             fee.add(txout.value);
                         } else {
@@ -515,11 +547,11 @@ function ApiServer(opts, libs) {
                     }
                     if(reward) {
                         for(var i in tx.outs) {
-                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
+                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, target_network) || []});
                         }
                     } else {
                         for(var i in tx.outs) {
-                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, network) || []});
+                            ret_tx.outs.push({value: conv_uint64(tx.outs[i].value), addrs: get_script_addresses(tx.outs[i].script, target_network) || []});
                             fee.subtract(tx.outs[i].value);
                         }
                     }
