@@ -138,7 +138,31 @@ function ApiServer(opts, libs) {
             return Object.keys(options).length > 0 ? options : null;
         }
 
+        function bech32_address_filter(address) {
+            for(var i in network.bech32_extra) {
+                if(address.startsWith(network.bech32_extra[i])) {
+                    var decode = null;
+                    try {
+                        decode = bitcoin.address.fromBech32(address);
+                    } catch(e) {}
+                    if(decode) {
+                        if(decode.version === 0) {
+                            if(decode.data.length === 20) {
+                                return bitcoin.payments.p2wpkh({hash: decode.data, network: network}).address;
+                            }
+                            if(decode.data.length === 32) {
+                                return bitcoin.payments.p2wsh({hash: decode.data, network: network}).address;
+                            }
+                        }
+                    }
+                    return address;
+                }
+            }
+            return address;
+        }
+
         async function get_addr(address) {
+            address = bech32_address_filter(address);
             var unconfs = mempool.unconfs(address);
             if(unconfs.txouts || unconfs.spents) {
                 var utxos = await db.getUnspents(address);
@@ -208,6 +232,7 @@ function ApiServer(opts, libs) {
         }
 
         async function get_utxos(address, options) {
+            address = bech32_address_filter(address);
             var utxos = await db.getUnspents(address, options);
             var unconfs = mempool.unconfs(address);
 
@@ -249,6 +274,7 @@ function ApiServer(opts, libs) {
         }
 
         async function get_addrlogs(address, options) {
+            address = bech32_address_filter(address);
             var addrlogs = await db.getAddrlogs(address, options);
             for(var i in addrlogs) {
                 var addrlog = addrlogs[i];

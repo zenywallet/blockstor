@@ -27,6 +27,7 @@
         bitzeny: {
             messagePrefix: '\u0018BitZeny Signed Message:\n',
             bech32: 'sz',
+            bech32_extra: ['bz', 'zeny'],
             bip32: {
                 public: 0x0488b21e,
                 private: 0x0488ade4
