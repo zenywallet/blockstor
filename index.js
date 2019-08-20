@@ -675,7 +675,7 @@ async function update_aliases() {
     }
 }
 
-async function migrate() {
+async function migrate_after_sync() {
     update_aliases();
 }
 
@@ -684,7 +684,6 @@ async function migrate() {
     apistream.start(app);
 
     try {
-        await migrate();
         height = await db.getLastBlockHeight() || 0;
         await txs_parser_log(height, 'start');
         await lastblock_rewrite();
@@ -693,6 +692,7 @@ async function migrate() {
         progress_enabled();
         await block_sync_tcp(true);
         await block_sync(true);
+        await migrate_after_sync();
         progress_disabled();
         await txs_parser_log(height, aborting ? 'aborted' : 'synced');
         if(aborting) {
