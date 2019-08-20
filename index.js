@@ -363,7 +363,12 @@ async function block_writer_with_stream(block, hash, time, rawblock) {
         },
         async function addrouts(txid, sequence, addrval) {
             var val = await db.getAddrval(addrval.address);
-            val = val ? val : {value: UINT64(0), utxo_count: 0};
+            if(!val) {
+                val = {value: UINT64(0), utxo_count: 0};
+                if(network_extras_enabled && addrval.address.startsWith(network.bech32)) {
+                    await update_address_alias(addrval.address);
+                }
+            }
 
             var balance = val.value.add(addrval.value);
             var utxo_count = val.utxo_count + addrval.utxo_count;
