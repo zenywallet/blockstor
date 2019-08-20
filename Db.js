@@ -848,7 +848,7 @@ function Db(opts) {
                 reject(null);
             }).on('end', function() {
                 console.log(addrs);
-                if(limit && addrs.length >= search_limit) {
+                if(limit && addrs.length >= limit) {
                     resolve(null);
                 } else {
                     resolve(addrs);
@@ -883,7 +883,7 @@ function Db(opts) {
                 reject(null);
             }).on('end', function() {
                 console.log(addrs);
-                if(limit && addrs.length >= search_limit) {
+                if(limit && addrs.length >= limit) {
                     resolve(null);
                 } else {
                     resolve(addrs);
