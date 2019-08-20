@@ -659,12 +659,12 @@ async function update_aliases() {
                             if(decode.data.length === 20) {
                                 var extaddr = bitcoin.payments.p2wpkh({hash: decode.data, network: network_extras[i]}).address;
                                 if(extaddr) {
-                                    db.setAlias(extaddr, addrs[j]);
+                                    await db.setAlias(extaddr, addrs[j]);
                                 }
                             } else if(decode.data.length === 32) {
                                 var extaddr = bitcoin.payments.p2wsh({hash: decode.data, network: network_extras[i]}).address;
                                 if(extaddr) {
-                                    db.setAlias(extaddr, addrs[j]);
+                                    await db.setAlias(extaddr, addrs[j]);
                                 }
                             }
                         }
@@ -676,7 +676,7 @@ async function update_aliases() {
 }
 
 async function migrate_after_sync() {
-    update_aliases();
+    await update_aliases();
 }
 
 ;(async function() {
