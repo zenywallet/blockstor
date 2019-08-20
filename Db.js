@@ -894,7 +894,26 @@ function Db(opts) {
 
     var search_limit = 20 + 1;
     this.searchAddresses = function(keyword) {
-        return self.searchAddrs(keyword, search_limit);
+        return new Promise(function(resolve, reject) {
+            self.searchAddrs(keyword, search_limit).then(function(addrs) {
+                if(addrs == null) {
+                    resolve(null);
+                } else {
+                    self.searchAliases(keyword, search_limit).then(function(aliases) {
+                        if(aliases == null) {
+                            resolve(null);
+                        } else {
+                            addrs = addrs.concat(aliases);
+                        }
+                        if(addrs.length >= search_limit) {
+                            resolve(null);
+                        } else {
+                            resolve(addrs);
+                        }
+                    });
+                }
+            });
+        });
     }
 
     this.searchTxids = function(keyword) {
