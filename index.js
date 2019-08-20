@@ -479,6 +479,9 @@ async function block_rollback(block, hash) {
                 await db.setAddrval(addrval.address, val.value.subtract(addrval.value), val.utxo_count - addrval.utxo_count);
             } else {
                 await db.delAddrval(addrval.address);
+                if(network_extras_enabled && addrval.address.startsWith(network.bech32)) {
+                    await delete_address_alias(addrval.address);
+                }
             }
         }
     );
@@ -670,6 +673,30 @@ async function update_address_alias(address) {
                     var extaddr = bitcoin.payments.p2wsh({hash: decode.data, network: network_extras[i]}).address;
                     if(extaddr) {
                         await db.setAlias(extaddr, address);
+                    }
+                }
+            }
+        }
+    }
+}
+
+async function delete_address_alias(address) {
+    var decode = null;
+    try {
+        decode = bitcoin.address.fromBech32(address);
+    } catch(e) {}
+    if(decode) {
+        for(var i in network_extras) {
+            if(decode.version === 0) {
+                if(decode.data.length === 20) {
+                    var extaddr = bitcoin.payments.p2wpkh({hash: decode.data, network: network_extras[i]}).address;
+                    if(extaddr) {
+                        await db.delAlias(extaddr);
+                    }
+                } else if(decode.data.length === 32) {
+                    var extaddr = bitcoin.payments.p2wsh({hash: decode.data, network: network_extras[i]}).address;
+                    if(extaddr) {
+                        await db.delAlias(extaddr);
                     }
                 }
             }
