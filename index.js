@@ -678,7 +678,6 @@ async function update_address_alias(address) {
 }
 
 async function update_aliases() {
-    console.log(network_extras_enabled);
     if(network_extras_enabled) {
         var addrs = await db.searchAddrs(network.bech32);
         for(var j in addrs) {
