@@ -639,11 +639,52 @@ async function block_sync_tcp(suppress) {
     tcp.stop();
 }
 
+async function update_aliases() {
+    if(network.bech32 && network.bech32_extra && network.bech32_extra.length > 0) {
+        var addrs = await db.searchAddrs(network.bech32);
+        if(addrs && addrs.length > 0) {
+            var network_extras = {};
+            for(var i in network.bech32_extra) {
+                network_extras[i] = JSON.parse(JSON.stringify(network));
+                network_extras[i].bech32 = network.bech32_extra[i];
+            }
+            for(var j in addrs) {
+                var decode = null;
+                try {
+                    decode = bitcoin.address.fromBech32(addrs[j]);
+                } catch(e) {}
+                if(decode) {
+                    for(var i in network.bech32_extra) {
+                        if(decode.version === 0) {
+                            if(decode.data.length === 20) {
+                                var extaddr = bitcoin.payments.p2wpkh({hash: decode.data, network: network_extras[i]}).address;
+                                if(extaddr) {
+                                    db.setAlias(extaddr, addrs[j]);
+                                }
+                            } else if(decode.data.length === 32) {
+                                var extaddr = bitcoin.payments.p2wsh({hash: decode.data, network: network_extras[i]}).address;
+                                if(extaddr) {
+                                    db.setAlias(extaddr, addrs[j]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+async function migrate() {
+    update_aliases();
+}
+
 ;(async function() {
     var app = apiserver.start();
     apistream.start(app);
 
     try {
+        await migrate();
         height = await db.getLastBlockHeight() || 0;
         await txs_parser_log(height, 'start');
         await lastblock_rewrite();
