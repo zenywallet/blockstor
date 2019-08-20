@@ -857,6 +857,41 @@ function Db(opts) {
         });
     }
 
+    this.searchAliases = function(keyword, limit) {
+        return new Promise(function(resolve, reject) {
+            var start = Buffer.concat([
+                uint8(prefix.aliases),
+                str(keyword)
+            ]);
+            var end = Buffer.concat([
+                uint8(prefix.aliases),
+                str(keyword.slice(0, -1) + String.fromCharCode(keyword.slice(-1).charCodeAt() + 1))
+            ]);
+            var options = {
+                gte: start,
+                lt: end
+            }
+            if(limit) {
+                options.limit = limit;
+            }
+            var addrs = [];
+            db.createReadStream(options).on('data', function(res) {
+                addrs.push(res.key.slice(1).toString());
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                console.log(addrs);
+                if(limit && addrs.length >= search_limit) {
+                    resolve(null);
+                } else {
+                    resolve(addrs);
+                }
+            });
+        });
+    }
+
     var search_limit = 20 + 1;
     this.searchAddresses = function(keyword) {
         return self.searchAddrs(keyword, search_limit);
