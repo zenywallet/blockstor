@@ -10,7 +10,8 @@ var prefix = {
     unspents: 0x04,     // address, sequence, txid, n = value
     addrvals: 0x05,     // address = value, utxo_count
     addrlogs: 0x06,     // address, sequence, type (0 - out | 1 - in) = txid, value
-    markers: 0x07       // apikey = sequence, rollback
+    markers: 0x07,      // apikey = sequence, rollback
+    aliases: 0x08       // alias address = address
 };
 
 var rocksdb_opts = {
@@ -735,6 +736,35 @@ function Db(opts) {
         var key = Buffer.concat([
             uint8(prefix.markers),
             str(apikey)
+        ]);
+        return self.del(key);
+    }
+
+    this.setAlias = function(alias_address, address) {
+        var key = Buffer.concat([
+            uint8(prefix.aliases),
+            str(alias_address)
+        ]);
+        var val = Buffer.concat([
+            str(address)
+        ]);
+        return self.put(key, val);
+    }
+
+    this.getAlias = function(alias_address) {
+        var key = Buffer.concat([
+            uint8(prefix.aliases),
+            str(alias_address)
+        ]);
+        return self.get(key, function(res) {
+            return res.toString();
+        });
+    }
+
+    this.delAlias = function(alias_address) {
+        var key = Buffer.concat([
+            uint8(prefix.aliases),
+            str(alias_address)
         ]);
         return self.del(key);
     }
