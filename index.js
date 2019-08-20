@@ -646,7 +646,7 @@ if(network.bech32_extra) {
         network_extras[i].bech32 = network.bech32_extra[i];
     }
 }
-network_extras_enabled = Object.keys(network_extras).length > 0;
+network_extras_enabled = network.bech32 && Object.keys(network_extras).length > 0;
 
 async function update_address_alias(address) {
     var decode = null;
