@@ -263,6 +263,9 @@
                   <li>
                     <a href="#da9c3756d4" class="toc-h2 toc-link" data-title="パラメータ設定">パラメータ設定</a>
                   </li>
+                  <li>
+                    <a href="#bitcoinjs-2" class="toc-h2 toc-link" data-title="BitcoinJS パラメータ設定">BitcoinJS パラメータ設定</a>
+                  </li>
               </ul>
           </li>
           <li>
@@ -557,6 +560,90 @@ TCP接続はフルノードの機能を持っていないので、必ず自前�
 <aside class="notice">
 http と WebSocket を一つのポート番号で動作させることもできます。その場合、http_port と ws_port に同じポート番号を設定してください。
 </aside>
+<h3 id='bitcoinjs-2'>BitcoinJS パラメータ設定</h3>
+<p>networks.&quot;coin name&quot; のパラメータ説明です。</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th></th>
+<th>Requirements</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>messagePrefix</td>
+<td></td>
+<td>required</td>
+<td>メッセージにサインをするときに使用するプレフィックス文字列</td>
+</tr>
+<tr>
+<td>bech32</td>
+<td></td>
+<td>optional</td>
+<td>bech32プレフィックスアドレス文字列</td>
+</tr>
+<tr>
+<td>bech32_extra</td>
+<td></td>
+<td>optional</td>
+<td>bech32パラメータ以外にサポートするbech32プレフィックスアドレス文字列のArray</td>
+</tr>
+<tr>
+<td>bip32</td>
+<td>public</td>
+<td>required</td>
+<td>base58Prefixes EXT_PUBLIC_KEY</td>
+</tr>
+<tr>
+<td>bip32</td>
+<td>private</td>
+<td>required</td>
+<td>base58Prefixes EXT_SECRET_KEY</td>
+</tr>
+<tr>
+<td>pubKeyHash</td>
+<td></td>
+<td>required</td>
+<td>base58Prefixes PUBKEY_ADDRESS</td>
+</tr>
+<tr>
+<td>scriptHash</td>
+<td></td>
+<td>required</td>
+<td>base58Prefixes SCRIPT_ADDRESS</td>
+</tr>
+<tr>
+<td>scriptHash2</td>
+<td></td>
+<td>optional</td>
+<td>base58Prefixes SCRIPT_ADDRESS2 (Monacoin用)</td>
+</tr>
+<tr>
+<td>wif</td>
+<td></td>
+<td>required</td>
+<td>base58Prefixes SECRET_KEY</td>
+</tr>
+<tr>
+<td>wif_old</td>
+<td></td>
+<td>optional</td>
+<td>base58Prefixes OLD_SECRET_KEY (Monacoin用)</td>
+</tr>
+</tbody></table>
+
+<aside class="notice">
+messagePrefix は、core の src/validation.cpp strMessageMagic を参照してください。先頭の数字は、string の文字列長を設定してください。
+</aside>
+
+<aside class="notice">
+base58Prefixes は、core の src/chainparams.cpp を参照してください。
+</aside>
+
+<aside class="notice">
+bech32_extra, scriptHash2, wif_old は、BitcoinJS標準のパラメータではありません。
+</aside>
 <h1 id='blockstor-startup'>Blockstor Startup - 起動</h1>
 <p>Node.js で Blockstor を起動する。</p>
 
@@ -571,7 +658,7 @@ http と WebSocket を一つのポート番号で動作させることもでき�
 
 <p>synced が表示された場合、Core との同期が済んだことを意味しますが、Core自体の同期が終わっているかどうかは考慮されていません。</p>
 
-<p>接続エラー等が何らかの異常が発生した場合、積極的にプロセスを終了するように実装されています。そのため、永続的な稼働を目指す場合、シェルスクリプト等で再起動するようにしてください。</p>
+<p>接続エラーなど何らかの異常が発生した場合は積極的にプロセスを終了するように設計されています。そのため、永続的な稼働を目指す場合はシェルスクリプト等で再起動するようにしてください。</p>
 
 <blockquote>
 <p>ブロックが見つからない場合の例</p>
