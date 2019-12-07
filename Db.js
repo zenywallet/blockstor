@@ -386,7 +386,7 @@ function Db(opts) {
                 } else {
                     db_options.limit = 1000;
                 }
-                if(options.seqbreak != 0) {
+                if(options.seqbreak == 0) {
                     db_options.limit++;
                 }
                 if(options.reverse != null) {
@@ -427,7 +427,7 @@ function Db(opts) {
             }).on('close', function() {
                 reject(null);
             }).on('end', function() {
-                if(options && options.seqbreak != 0 && unspents.length == db_options.limit) {
+                if(options && options.seqbreak == 0 && unspents.length == db_options.limit) {
                     var last = unspents[unspents.length - 1];
                     if(last) {
                         var last_sequence = last.sequence;
@@ -576,7 +576,7 @@ function Db(opts) {
                 } else {
                     db_options.limit = 1000;
                 }
-                if(options.seqbreak != 0) {
+                if(options.seqbreak == 0) {
                     db_options.limit++;
                 }
                 if(options.reverse != null) {
@@ -616,7 +616,7 @@ function Db(opts) {
             }).on('close', function() {
                 reject(null);
             }).on('end', function() {
-                if(options && options.seqbreak != 0 && addrlogs.length == db_options.limit) {
+                if(options && options.seqbreak == 0 && addrlogs.length == db_options.limit) {
                     var last = addrlogs[addrlogs.length - 1];
                     if(last) {
                         var last_sequence = last.sequence;
