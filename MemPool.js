@@ -149,7 +149,7 @@ function MemPool(opts, libs) {
                         var spent = spents[j];
                         for(var k in spent.addresses) {
                             var addr = spent.addresses[k];
-                            pushex(mp_addr_spents, addr, {txid: spent.txid, n: spent.n, value: spent.value});
+                            pushex(mp_addr_spents, addr, {sequence: spent.sequence, txid: spent.txid, n: spent.n, value: spent.value});
                         }
                     }
                 } else {
@@ -205,7 +205,7 @@ function MemPool(opts, libs) {
                 if(n != 0xffffffff) {
                     var txout = await db.getTxout(in_txid, n);
                     if(txout) {
-                        pushex(mp_txins, txid, {txid: in_txid, n: n, value: txout.value, addresses: txout.addresses});
+                        pushex(mp_txins, txid, {sequence: txout.sequence, txid: in_txid, n: n, value: txout.value, addresses: txout.addresses});
                         var in_txid_n = in_txid + '-' + n;
                         if(mp_spents[in_txid_n]) {
                             console.log('\rINFO: mempool double spending ' + in_txid_n);
@@ -214,7 +214,7 @@ function MemPool(opts, libs) {
 
                         for(var i in txout.addresses) {
                             var addr = txout.addresses[i];
-                            pushex(mp_addr_spents, addr, {txid: in_txid, n: n, value: txout.value});
+                            pushex(mp_addr_spents, addr, {sequence: txout.sequence, txid: in_txid, n: n, value: txout.value});
                         }
                     } else {
                         var find_txout = false;
