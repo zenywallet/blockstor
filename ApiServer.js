@@ -304,6 +304,22 @@ function ApiServer(opts, libs) {
             return addrlogs;
         }
 
+        async function get_unconf(address) {
+            address = bech32_address_filter(address);
+            var unconfs = mempool.unconfs(address);
+            for(var i in unconfs.txouts) {
+                var txout = unconfs.txouts[i]
+                txout.n = parseInt(txout.n)
+                txout.value = conv_uint64(txout.value)
+            }
+            for(var i in unconfs.spents) {
+                var spent = unconfs.spents[i]
+                spent.n = parseInt(spent.n)
+                spent.value = conv_uint64(spent.value)
+            }
+            return unconfs
+        }
+
         // GET - /addr/{addr}
         router.get('/addr/:addr', async function(req, res) {
             res.json({err: errval, res: await get_addr(req.params.addr)});
@@ -352,6 +368,21 @@ function ApiServer(opts, libs) {
         // GET - /mempool
         router.get('/mempool', async function(req, res) {
             res.json({err: errval, res: mempool.stream_unconfs()});
+        });
+
+        // GET - /unconf/{addr}
+        router.get('/unconf/:addr', async function(req, res) {
+            res.json({err: errval, res: await get_unconf(req.params.addr)});
+        });
+
+        // POST - {unconfs: [addr1, addr2, ..., addrN]}
+        router.post('/unconfs', async function(req, res) {
+            var addrs = req.body.addrs;
+            var unconfs = [];
+            for(var i in addrs) {
+                unconfs.push(await get_unconf(addrs[i]));
+            }
+            res.json({err: errval, res: unconfs});
         });
 
         // GET - /marker/{apikey}
