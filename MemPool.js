@@ -138,7 +138,7 @@ function MemPool(opts, libs) {
                         var warning = txout.addresses.length > 1;
                         for(var k in txout.addresses) {
                             var addr = txout.addresses[k];
-                            pushex(mp_addr_txouts, addr, {txid: txout.txid, n: txout.n, value: txout.value});
+                            pushex(mp_addr_txouts, addr, {txid: txid, n: txout.n, value: txout.value});
                             if(warning) {
                                 mp_addr_warning[addr] = 1;
                             }
