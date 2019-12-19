@@ -307,17 +307,22 @@ function ApiServer(opts, libs) {
         async function get_unconf(address) {
             address = bech32_address_filter(address);
             var unconfs = mempool.unconfs(address);
+            var ret_unconfs = {};
+            if(unconfs.txouts) {
+                ret_unconfs.txouts = [];
+            }
+            if(unconfs.spents) {
+                ret_unconfs.spents = [];
+            }
             for(var i in unconfs.txouts) {
-                var txout = unconfs.txouts[i]
-                txout.n = parseInt(txout.n)
-                txout.value = conv_uint64(txout.value)
+                var txout = unconfs.txouts[i];
+                ret_unconfs.txouts.push({txid: txout.txid, n: parseInt(txout.n), value: conv_uint64(txout.value)});
             }
             for(var i in unconfs.spents) {
-                var spent = unconfs.spents[i]
-                spent.n = parseInt(spent.n)
-                spent.value = conv_uint64(spent.value)
+                var spent = unconfs.spents[i];
+                ret_unconfs.spents.push({txid: spent.txid, n: parseInt(spent.n), value: conv_uint64(spent.value)});
             }
-            return unconfs
+            return ret_unconfs
         }
 
         // GET - /addr/{addr}
