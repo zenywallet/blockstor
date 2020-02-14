@@ -55,7 +55,7 @@ function MemPool(opts, libs) {
 
     function addex(obj, key, value) {
         if(!obj[key]) {
-            obj[key] = value;
+            obj[key] = value.clone();
         } else {
             obj[key].add(value);
         }
