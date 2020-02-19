@@ -598,6 +598,32 @@ function ApiServer(opts, libs) {
             });
         });
 
+        // GET - /txout/{txid}
+        router.get('/txout/:txid', async function(req, res) {
+            var txid = req.params.txid;
+            var txout = await db.getTxouts(txid);
+            for(var i in txout) {
+                var item = txout[i];
+                item.value = conv_uint64(item.value);
+            }
+            res.json({err: errval, res: txout});
+        });
+
+        // POST - {txids: [txid1, txid2, ..., txidN]}
+        router.post('/txouts', async function(req, res) {
+            var txids = req.body.txids;
+            var txouts = [];
+            for(var i in txids) {
+                var txout = await db.getTxouts(txids[i]);
+                for(var i in txout) {
+                    var item = txout[i];
+                    item.value = conv_uint64(item.value);
+                }
+                txouts.push(txout);
+            }
+            res.json({err: errval, res: txouts});
+        });
+
         // GET - /search/{keyword}
         router.get('/search/:keyword', async function(req, res) {
             var keyword = req.params.keyword;

@@ -288,6 +288,43 @@ function Db(opts) {
         });
     }
 
+    this.getTxouts = function(txid) {
+        return new Promise(function(resolve, reject) {
+            var p_txout = uint8(prefix.txouts);
+            var hex_txid = hex(txid);
+
+            var db_options = {
+                gte: Buffer.concat([
+                    p_txout,
+                    hex_txid,
+                    uint8_min
+                ]),
+                lte: Buffer.concat([
+                    p_txout,
+                    hex_txid,
+                    uint8_max
+                ])
+            }
+
+            var txouts = [];
+            db.createReadStream(db_options).on('data', function(res) {
+                var len = res.key.length;
+                txouts.push({
+                    n: res.key.readUInt8(len - 1),
+                    sequence: res.value.readUInt32BE(0) * 0x100000000 + res.value.readUInt32BE(4),
+                    value: UINT64(res.value.readUInt32BE(12), res.value.readUInt32BE(8)),
+                    addresses: res.value.slice(16).toString().split(',')
+                });
+            }).on('error', function(err) {
+                reject(err);
+            }).on('close', function() {
+                reject(null);
+            }).on('end', function() {
+                resolve(txouts);
+            });
+        });
+    }
+
     this.delTxout = function(txid, n) {
         var key = Buffer.concat([
             uint8(prefix.txouts),
