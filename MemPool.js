@@ -149,7 +149,7 @@ function MemPool(opts, libs) {
                         var spent = spents[j];
                         for(var k in spent.addresses) {
                             var addr = spent.addresses[k];
-                            pushex(mp_addr_spents, addr, {sequence: spent.sequence, txid: spent.txid, n: spent.n, value: spent.value});
+                            pushex(mp_addr_spents, addr, {sequence: spent.sequence, txid: spent.txid, n: spent.n, value: spent.value, txid_out: txid});
                         }
                     }
                 } else {
@@ -214,7 +214,7 @@ function MemPool(opts, libs) {
 
                         for(var i in txout.addresses) {
                             var addr = txout.addresses[i];
-                            pushex(mp_addr_spents, addr, {sequence: txout.sequence, txid: in_txid, n: n, value: txout.value});
+                            pushex(mp_addr_spents, addr, {sequence: txout.sequence, txid: in_txid, n: n, value: txout.value, txid_out: txid});
                         }
                     } else {
                         var find_txout = false;
@@ -234,7 +234,7 @@ function MemPool(opts, libs) {
 
                                 for(var i in txout.addresses) {
                                     var addr = txout.addresses[i];
-                                    pushex(mp_addr_spents, addr, {txid: in_txid, n: n, value: txout.value});
+                                    pushex(mp_addr_spents, addr, {txid: in_txid, n: n, value: txout.value, txid_out: txid});
                                 }
                                 break;
                             }

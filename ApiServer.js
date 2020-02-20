@@ -320,7 +320,7 @@ function ApiServer(opts, libs) {
             }
             for(var i in unconfs.spents) {
                 var spent = unconfs.spents[i];
-                ret_unconfs.spents.push({txid: spent.txid, n: parseInt(spent.n), value: conv_uint64(spent.value)});
+                ret_unconfs.spents.push({txid: spent.txid, n: parseInt(spent.n), value: conv_uint64(spent.value), txid_out: spent.txid_out});
             }
             return ret_unconfs
         }
