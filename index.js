@@ -755,7 +755,11 @@ async function migrate_after_sync() {
             if(aborting) {
                 await abort();
             } else {
-                setTimeout(worker, 1000);
+                if(new_block) {
+                    worker();
+                } else {
+                    setTimeout(worker, 1000);
+                }
             }
         } catch(ex) {
             console.log('\r' + ex);
