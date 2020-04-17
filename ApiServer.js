@@ -593,7 +593,6 @@ function ApiServer(opts, libs) {
                     }
                     ret_tx.fee = conv_uint64(fee);
                     res.json({err: errval, res: ret_tx});
-                    console.log('\rINFO: getRawTransactrion txid=' + txid);
                 });
             });
         });
