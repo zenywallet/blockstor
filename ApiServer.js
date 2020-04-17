@@ -512,9 +512,10 @@ function ApiServer(opts, libs) {
                 }
                 release(async function() {
                     lock_count--;
+                    var dbtx = null;
                     if(ret_rawtx.code && rawblock == null) {
                         if(opts.db.rawblocks) {
-                            var dbtx = await db.getTx(txid);
+                            dbtx = await db.getTx(txid);
                             if(dbtx) {
                                 var height = dbtx.height;
                                 var db_hash = await db.getBlockHash(height);
@@ -592,6 +593,14 @@ function ApiServer(opts, libs) {
                         }
                     }
                     ret_tx.fee = conv_uint64(fee);
+                    if(!dbtx) {
+                        dbtx = await db.getTx(txid);
+                    }
+                    if(dbtx) {
+                        ret_tx.height = dbtx.height;
+                        ret_tx.time = dbtx.time;
+                        ret_tx.sequence = dbtx.sequence;
+                    }
                     res.json({err: errval, res: ret_tx});
                 });
             });

@@ -1826,7 +1826,10 @@ mempool: count=0
         ]
       }
     ],
-    "fee": 381
+    "fee": 381,
+    "height": 1617119,
+    "time": 1562164531,
+    "sequence": 3197162
   }
 }
 </code></pre>
@@ -1892,7 +1895,27 @@ mempool: count=0
 <td></td>
 <td>トランザクション手数料</td>
 </tr>
+<tr>
+<td></td>
+<td>height</td>
+<td></td>
+<td>ブロック高 ※</td>
+</tr>
+<tr>
+<td></td>
+<td>time</td>
+<td></td>
+<td>時間 (ブロックの時間) ※</td>
+</tr>
+<tr>
+<td></td>
+<td>sequence</td>
+<td></td>
+<td>Blockstor シーケンス番号 ※</td>
+</tr>
 </tbody></table>
+
+<p>※height, time, sequence はトランザクションが確認済みの場合のみ存在する</p>
 
 <aside class="notice">
 トランザクション情報取得機能を使用する場合、coind に txindex=1 を指定してください。指定しなかった場合も問題なく動作するようにフォールバックを実装していますが、ブロックからトランザクションデータを取り出すので、少しパフォーマンスが悪くなります。
