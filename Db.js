@@ -357,7 +357,7 @@ function Db(opts) {
             uint32(n)
         ]);
         return self.get(key, function(res) {
-            return res.readUInt32BE(0);
+            return UINT64(res.readUInt32BE(4), res.readUInt32BE(0));
         });
     }
 
