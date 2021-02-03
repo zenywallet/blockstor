@@ -297,12 +297,12 @@ function Db(opts) {
                 gte: Buffer.concat([
                     p_txout,
                     hex_txid,
-                    uint8_min
+                    uint32_min
                 ]),
                 lte: Buffer.concat([
                     p_txout,
                     hex_txid,
-                    uint8_max
+                    uint32_max
                 ])
             }
 
@@ -310,7 +310,7 @@ function Db(opts) {
             db.createReadStream(db_options).on('data', function(res) {
                 var len = res.key.length;
                 txouts.push({
-                    n: res.key.readUInt8(len - 1),
+                    n: res.key.readUInt32BE(len - 4),
                     sequence: res.value.readUInt32BE(0) * 0x100000000 + res.value.readUInt32BE(4),
                     value: UINT64(res.value.readUInt32BE(12), res.value.readUInt32BE(8)),
                     addresses: res.value.slice(16).toString().split(',')
