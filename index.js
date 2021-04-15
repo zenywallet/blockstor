@@ -465,7 +465,7 @@ async function block_rollback(block, hash) {
             }
 
             await db.delAddrlog(addrval.address, sequence, 0);
-            await db.setAddrval(addrval.address, val.value.subtract(addrval.value), val.utxo_count + addrval.utxo_count);
+            await db.setAddrval(addrval.address, val.value.add(addrval.value), val.utxo_count + addrval.utxo_count);
         },
         async function addrouts(txid, sequence, addrval) {
             var val = await db.getAddrval(addrval.address);
