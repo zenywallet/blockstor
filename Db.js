@@ -292,6 +292,10 @@ function Db(opts) {
         return new Promise(function(resolve, reject) {
             var p_txout = uint8(prefix.txouts);
             var hex_txid = hex(txid);
+            if(hex_txid.length != 32) {
+                resolve([]);
+                return
+            }
 
             var db_options = {
                 gte: Buffer.concat([
