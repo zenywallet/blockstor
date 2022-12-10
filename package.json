@@ -26,7 +26,7 @@
     "config": "^1.30.0",
     "cors": "^2.8.5",
     "cuint": "^0.2.2",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "fs-extra": "^6.0.1",
     "level-packager": "^3.1.0",
     "mutexify": "^1.2.0",
