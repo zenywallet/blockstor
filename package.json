@@ -23,7 +23,7 @@
   "dependencies": {
     "bitcoin": "^3.0.1",
     "bitcoinjs-lib": "git://github.com/zenywallet/bitcoinjs-lib.git",
-    "config": "^1.30.0",
+    "config": "^3.3.8",
     "cors": "^2.8.5",
     "cuint": "^0.2.2",
     "express": "^4.16.3",
